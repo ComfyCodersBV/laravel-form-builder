@@ -2,7 +2,7 @@
 
 All notable changes to `laravel-form-builder` will be documented in this file.
 
-## 1.0.0 - unreleased
+## 1.0.0 - 2026-08-04
 
 First release. This package is the PHP half of `laravel-vue-form-builder`, extracted so a renderer for another frontend
 can reuse it. It carries the full git history of that code.
