@@ -11,13 +11,13 @@ class FormBuilder
     public function recaptchaJs(): HtmlString
     {
         if (
-            ! config('vue-form-builder.recaptcha.enabled', true)
-            || empty(config('vue-form-builder.recaptcha.site_key'))
+            ! config('form-builder.recaptcha.enabled', true)
+            || empty(config('form-builder.recaptcha.site_key'))
         ) {
             return new HtmlString('');
         }
 
-        $siteKey = config('vue-form-builder.recaptcha.site_key');
+        $siteKey = config('form-builder.recaptcha.site_key');
 
         return new HtmlString(
             sprintf('<script src="https://www.google.com/recaptcha/api.js?render=%s"></script>', $siteKey)

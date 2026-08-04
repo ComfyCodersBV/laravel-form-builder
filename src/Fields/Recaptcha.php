@@ -17,9 +17,9 @@ class Recaptcha extends BaseField
     public static function make(?string $name = 'g-recaptcha-response'): static
     {
         $instance = parent::make($name);
-        $instance->siteKey = config('vue-form-builder.recaptcha.site_key');
-        $instance->action = config('vue-form-builder.recaptcha.default_action', 'submit');
-        $instance->minScore = config('vue-form-builder.recaptcha.default_score', 0.5);
+        $instance->siteKey = config('form-builder.recaptcha.site_key');
+        $instance->action = config('form-builder.recaptcha.default_action', 'submit');
+        $instance->minScore = config('form-builder.recaptcha.default_score', 0.5);
 
         return $instance;
     }

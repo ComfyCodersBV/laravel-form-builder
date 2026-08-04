@@ -20,9 +20,3 @@
 /phpstan-baseline.neon  export-ignore
 /.gitlab-ci.yml     export-ignore
 
-# The npm manifest declares supported peer ranges and hosts frontend tooling for
-# CI. It resolves nothing for consumers, because Vite resolves imports against
-# the application's node_modules, never this file. Keeping it out of dist
-# installs removes a manifest that looks authoritative inside vendor/ and is not.
-/package.json       export-ignore
-/package-lock.json  export-ignore

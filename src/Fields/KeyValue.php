@@ -14,7 +14,7 @@ class KeyValue extends BaseField
             'array',
         ]);
 
-        $this->attributes['maskedKeyPattern'] = config('vue-form-builder.key_value.masked_key_pattern', 'password|secret|token');
+        $this->attributes['maskedKeyPattern'] = config('form-builder.key_value.masked_key_pattern', 'password|secret|token');
     }
 
     public function keyLabel(string $label): static

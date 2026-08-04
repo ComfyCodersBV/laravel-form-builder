@@ -51,8 +51,8 @@ class Number extends BaseField
 
     public function toSchema(): array
     {
-        $this->attributes['decrementLabel'] ??= trans('vue-form-builder::fields.decrement');
-        $this->attributes['incrementLabel'] ??= trans('vue-form-builder::fields.increment');
+        $this->attributes['decrementLabel'] ??= trans('form-builder::fields.decrement');
+        $this->attributes['incrementLabel'] ??= trans('form-builder::fields.increment');
 
         return parent::toSchema();
     }

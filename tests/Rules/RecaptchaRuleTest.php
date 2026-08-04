@@ -17,12 +17,12 @@ function runRecaptcha(RecaptchaRule $rule, mixed $value): ?string
 }
 
 beforeEach(function () {
-    config()->set('vue-form-builder.recaptcha.enabled', true);
-    config()->set('vue-form-builder.recaptcha.secret_key', 'test-secret');
+    config()->set('form-builder.recaptcha.enabled', true);
+    config()->set('form-builder.recaptcha.secret_key', 'test-secret');
 });
 
 it('passes silently when recaptcha is disabled', function () {
-    config()->set('vue-form-builder.recaptcha.enabled', false);
+    config()->set('form-builder.recaptcha.enabled', false);
     Http::fake();
 
     expect(runRecaptcha(new RecaptchaRule, ''))->toBeNull();
@@ -30,43 +30,43 @@ it('passes silently when recaptcha is disabled', function () {
 });
 
 it('fails when no secret key is configured', function () {
-    config()->set('vue-form-builder.recaptcha.secret_key', '');
+    config()->set('form-builder.recaptcha.secret_key', '');
 
     expect(runRecaptcha(new RecaptchaRule, 'token'))
-        ->toBe(trans('vue-form-builder::recaptcha.not-configured'));
+        ->toBe(trans('form-builder::recaptcha.not-configured'));
 });
 
 it('fails on an empty token', function () {
     expect(runRecaptcha(new RecaptchaRule, ''))
-        ->toBe(trans('vue-form-builder::recaptcha.validation-failed'));
+        ->toBe(trans('form-builder::recaptcha.validation-failed'));
 });
 
 it('fails when the verification request is not successful', function () {
     Http::fake(['*' => Http::response(null, 500)]);
 
     expect(runRecaptcha(new RecaptchaRule, 'token'))
-        ->toBe(trans('vue-form-builder::recaptcha.validation-failed'));
+        ->toBe(trans('form-builder::recaptcha.validation-failed'));
 });
 
 it('fails when google reports success false', function () {
     Http::fake(['*' => Http::response(['success' => false], 200)]);
 
     expect(runRecaptcha(new RecaptchaRule, 'token'))
-        ->toBe(trans('vue-form-builder::recaptcha.validation-failed'));
+        ->toBe(trans('form-builder::recaptcha.validation-failed'));
 });
 
 it('fails when the action does not match', function () {
     Http::fake(['*' => Http::response(['success' => true, 'action' => 'other', 'score' => 0.9], 200)]);
 
     expect(runRecaptcha(new RecaptchaRule('submit', 0.5), 'token'))
-        ->toBe(trans('vue-form-builder::recaptcha.validation-failed'));
+        ->toBe(trans('form-builder::recaptcha.validation-failed'));
 });
 
 it('fails when the score is below the threshold', function () {
     Http::fake(['*' => Http::response(['success' => true, 'action' => 'submit', 'score' => 0.1], 200)]);
 
     expect(runRecaptcha(new RecaptchaRule('submit', 0.5), 'token'))
-        ->toBe(trans('vue-form-builder::recaptcha.validation-failed'));
+        ->toBe(trans('form-builder::recaptcha.validation-failed'));
 });
 
 it('passes when success, action and score are valid', function () {
@@ -81,5 +81,5 @@ it('fails when the http client throws', function () {
     });
 
     expect(runRecaptcha(new RecaptchaRule, 'token'))
-        ->toBe(trans('vue-form-builder::recaptcha.validation-failed'));
+        ->toBe(trans('form-builder::recaptcha.validation-failed'));
 });

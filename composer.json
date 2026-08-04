@@ -1,12 +1,12 @@
 {
-    "name": "tranquil-tools/laravel-vue-form-builder",
-    "description": "A VueJS/Inertia FormBuilder package for Laravel",
+    "name": "tranquil-tools/laravel-form-builder",
+    "description": "Define Laravel form configurations in PHP: schema, fields, validation and config, independent of any frontend",
     "keywords": [
         "ComfyCoders BV",
         "laravel",
-        "laravel-vue-form-builder"
+        "laravel-form-builder"
     ],
-    "homepage": "https://github.com/comfycodersbv/laravel-vue-form-builder",
+    "homepage": "https://github.com/comfycodersbv/laravel-form-builder",
     "license": "MIT",
     "authors": [
         {

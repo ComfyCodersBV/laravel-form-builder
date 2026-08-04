@@ -58,7 +58,7 @@ class Button extends BaseField
         $schema = parent::toSchema();
 
         if (! is_null($this->confirmTitle) || ! is_null($this->confirmMessage)) {
-            $this->cancelLabel ??= trans('vue-form-builder::buttons.cancel');
+            $this->cancelLabel ??= trans('form-builder::buttons.cancel');
         }
 
         return array_merge($schema, array_filter([

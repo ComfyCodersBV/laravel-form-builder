@@ -10,7 +10,7 @@ class Submit extends Button
 
     public function toSchema(): array
     {
-        $this->label ??= trans('vue-form-builder::buttons.save');
+        $this->label ??= trans('form-builder::buttons.save');
 
         return parent::toSchema();
     }

@@ -16,9 +16,9 @@ class Select extends BaseField
 
     public function toSchema(): array
     {
-        $this->attributes['searchPlaceholder'] ??= trans('vue-form-builder::fields.search-placeholder');
-        $this->attributes['noResultsLabel'] ??= trans('vue-form-builder::fields.no-results');
-        $this->attributes['choosePlaceholder'] ??= trans('vue-form-builder::fields.choose-option');
+        $this->attributes['searchPlaceholder'] ??= trans('form-builder::fields.search-placeholder');
+        $this->attributes['noResultsLabel'] ??= trans('form-builder::fields.no-results');
+        $this->attributes['choosePlaceholder'] ??= trans('form-builder::fields.choose-option');
 
         return parent::toSchema();
     }

@@ -13,6 +13,17 @@ use TranquilTools\FormBuilder\Fields\Radio;
 
 class FormConfig implements JsonSerializable
 {
+    /**
+     * The contract between this package and whichever renderer consumes its schema.
+     *
+     * Bump the major when a renderer that does not know about the change would
+     * misrender a form — a new field type, a renamed key, changed semantics for
+     * an existing one. Bump the minor for additions a renderer may ignore safely.
+     * Renderers compare their supported version against this and refuse to render
+     * silently wrong output.
+     */
+    public const SCHEMA_VERSION = '1.0';
+
     protected ?AbstractForm $configurator = null;
 
     protected array|Model $data = [];
@@ -130,7 +141,7 @@ class FormConfig implements JsonSerializable
 
     public function jsonSerialize(): array
     {
-        $schemas = array_map(fn($field) => $field->toSchema(), $this->getFields());
+        $schemas = array_map(fn ($field) => $field->toSchema(), $this->getFields());
         $schemas = Radio::normalize($schemas);
 
         $defaults = $this->getData();
@@ -139,6 +150,7 @@ class FormConfig implements JsonSerializable
         }
 
         return [
+            'schemaVersion' => self::SCHEMA_VERSION,
             'id' => $this->getId(),
             'action' => $this->getAction(),
             'defaults' => $defaults,

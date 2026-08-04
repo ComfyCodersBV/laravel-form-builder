@@ -1,217 +1,46 @@
-# A VueJS/Inertia FormBuilder package for Laravel
+# A FormBuilder core package for Laravel
 
-Define Laravel-VueJS forms configurations in PHP.
+Define Laravel form configurations in PHP: schema, fields, validation and config. This package knows nothing about any
+frontend — it produces a framework-agnostic JSON schema that a renderer consumes.
 
-## Documentation
+## You probably want the Vue package instead
 
-Full documentation is available at **[docs.comfycoders.nl](https://docs.comfycoders.nl/laravel-vue-form-builder)**.
-
-Topics covered:
-
-- [Installation](https://docs.comfycoders.nl/laravel-vue-form-builder/v1/installation)
-- [Creating a Form](https://docs.comfycoders.nl/laravel-vue-form-builder/v1/creating-forms)
-- [All Field Types](https://docs.comfycoders.nl/laravel-vue-form-builder/v1/fields/common-options)
-- [Vue Usage](https://docs.comfycoders.nl/laravel-vue-form-builder/v1/vue-usage)
-- [Validation](https://docs.comfycoders.nl/laravel-vue-form-builder/v1/validation)
-- [Configuration](https://docs.comfycoders.nl/laravel-vue-form-builder/v1/configuration)
-
-## CrudBuilder
-
-Want a complete CRUD solution? Our **[CrudBuilder](https://docs.comfycoders.nl/laravel-vue-crud-builder)** builds on top
-of this FormBuilder **and** the TableBuilder to give you full create, read, update, and delete flows without repetitive
-boilerplate.
-
-- **Docs:** [docs.comfycoders.nl/laravel-vue-crud-builder](https://docs.comfycoders.nl/laravel-vue-crud-builder)
-- **GitHub:** [github.com/ComfyCodersBV/laravel-vue-crud-builder](https://github.com/ComfyCodersBV/laravel-vue-crud-builder)
-
-Installing the CrudBuilder pulls in this package automatically as a Composer dependency.
-
----
-
-## Quick start
-
-### Installation
-
-You can install the package via composer:
+Unless you are writing a renderer, install
+**[tranquil-tools/laravel-vue-form-builder](https://gitlab.comfycoders.nl/tranquil-tools/laravel-vue-form-builder)**. It
+requires this package, so you get both:
 
 ```bash
 composer require tranquil-tools/laravel-vue-form-builder
 ```
 
-Install the frontend dependencies. The package ships raw `.vue` files that your application compiles,
-so their imports resolve against your `node_modules`. Beyond what the Laravel Vue starter kit already
-gives you:
+**Full documentation lives at
+[docs.comfycoders.nl](https://docs.comfycoders.nl/laravel-vue-form-builder)** — field types, validation, configuration
+and Vue usage are documented there. This package ships no `docs/` directory on purpose: one documentation site, one
+version stream, no duplication.
 
-```cli
-npm install reka-ui lucide-vue-next
-```
+## What lives here
 
-A WYSIWYG editor is opt-in. The package imports no editor, so nothing is needed here unless you
-[register one](https://docs.comfycoders.nl/laravel-vue-form-builder/v1/fields/wysiwyg).
+|                           |                                                                                            |
+|---------------------------|--------------------------------------------------------------------------------------------|
+| `src/`                    | `AbstractForm`, `FormConfig`, every field type, validation rules, the `make:form` commands |
+| `config/form-builder.php` | WYSIWYG defaults, reCAPTCHA and key-value settings                                         |
+| `resources/lang/`         | translations used by PHP-side field labels                                                 |
+| `stubs/`                  | templates for the generator commands                                                       |
 
-Optional: you may publish the config file with:
+The boundary rule: **what produces schema belongs here, what reads schema belongs in a renderer.**
 
-```bash
-php artisan vendor:publish --tag="vue-form-builder-config"
-```
+## The schema contract
 
-The content of the published config can be viewed [here](./config/vue-form-builder.php).
+`FormConfig::SCHEMA_VERSION` is emitted as `schemaVersion` in every payload. A renderer compares it against the version
+it supports and refuses to render rather than silently dropping a field type it does not recognise. Bump the major for
+changes that would misrender in an older renderer, the minor for additions that can be ignored safely.
 
-Alter you vite.config.ts to add an `@form-builder` alias:
+## Namespace
 
-```ts
-import {defineConfig} from 'vite';
-import path from 'path';
+The namespace is `TranquilTools\FormBuilder\` and did **not** change when this package was extracted from the Vue
+renderer, so `use TranquilTools\FormBuilder\Fields\Text;` keeps working. Exactly one installed package may claim that
+namespace: this one.
 
-export default defineConfig({
-    plugins: [
-        // ...
-    ],
-    resolve: {
-        alias: {
+## Credits
 
-            // Add this:
-
-            '@form-builder': path.resolve(__dirname, 'vendor/tranquil-tools/laravel-vue-form-builder/resources/js'),
-        },
-    },
-});
-```
-
-## Basic usage
-
-```php
-<?php
-
-declare(strict_types=1);
-
-namespace App\Http\Controllers;
-
-use App\Forms\CategoryForm;
-use App\Http\Requests\CategoryFormRequest;
-use App\Models\ExampleModel;
-use Inertia\Inertia;
-use Inertia\Response;
-
-class ExampleController extends Controller
-{
-    public function edit(ExampleModel $model): Response
-    {
-        return Inertia::render('PathToVueFile', [
-            'form' => ExampleForm::make()
-                ->action(route('categories.update', $model))
-                ->method('PUT')
-                ->fill($model),
-        ]);
-    }
-}
-```
-
-```php
-<?php
-
-declare(strict_types=1);
-
-namespace App\Forms;
-
-use App\Models\Template;
-use TranquilTools\FormBuilder\AbstractForm;
-use TranquilTools\FormBuilder\Fields\Number;
-use TranquilTools\FormBuilder\Fields\Select;
-use TranquilTools\FormBuilder\Fields\Submit;
-use TranquilTools\FormBuilder\Fields\Text;
-use TranquilTools\FormBuilder\Fields\Wysiwyg;
-use TranquilTools\FormBuilder\FormConfig;
-
-class ExampleForm extends AbstractForm
-{
-    public function configure(FormConfig $form)
-    {
-        $form->class(['space-y-4', 'mx-auto', 'mt-3']);
-    }
-
-    public function fields(): array
-    {
-        return [
-            Number::make('position')
-                ->label(__('Order'))
-                ->rules([
-                    'required',
-                    'integer',
-                    'min:1',
-                ]),
-
-            Text::make('title')
-                ->label(__('Name'))
-                ->autocomplete(false)
-                ->rules([
-                    'required',
-                    'string',
-                    'max:255',
-                ]),
-
-            Text::make('description')
-                ->label(__('Description'))
-                ->autocomplete(false)
-                ->rules([
-                    'required',
-                    'string',
-                    'max:255',
-                ]),
-                
-            Wysiwyg::make('content')
-                ->label(__('Content')),
-
-            Select::make('template_id')
-                ->label(__('Template'))
-                ->options(Template::all()->pluck('name', 'id')->toArray())
-                ->rules([
-                    'nullable',
-                    'exists:templates,id',
-                ]),
-
-            Submit::make()
-                ->label(__('Save')),
-        ];
-    }
-}
-```
-
-```php
-<?php
-
-declare(strict_types=1);
-
-namespace App\Http\Requests;
-
-use App\Forms\ExampleForm;
-use Illuminate\Foundation\Http\FormRequest;
-
-class ExampleFormRequest extends FormRequest
-{
-    public function rules(): array
-    {
-        return ExampleForm::rules();
-    }
-}
-```
-
-```vue
-
-<script setup lang="ts">
-    import Form from '@form-builder/components/Form.vue';
-    import {FormSchema} from '@form-builder/types/form-builder';
-
-    defineProps<{
-        form: FormSchema;
-    }>();
-</script>
-
-<template>
-    <div class="...">
-        <div class="...">
-            <Form :schema="form"/>
-        </div>
-    </div>
-</template>
-```
+Built by [ComfyCoders BV](https://comfycoders.nl). Licensed under MIT — see [LICENSE.md](LICENSE.md).

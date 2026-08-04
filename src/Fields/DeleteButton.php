@@ -10,10 +10,10 @@ class DeleteButton extends Button
 
     public function toSchema(): array
     {
-        $this->label ??= trans('vue-form-builder::buttons.delete');
-        $this->cancelLabel ??= trans('vue-form-builder::buttons.cancel');
-        $this->confirmTitle ??= trans('vue-form-builder::buttons.confirm-title');
-        $this->confirmMessage ??= trans('vue-form-builder::buttons.confirm-message');
+        $this->label ??= trans('form-builder::buttons.delete');
+        $this->cancelLabel ??= trans('form-builder::buttons.cancel');
+        $this->confirmTitle ??= trans('form-builder::buttons.confirm-title');
+        $this->confirmMessage ??= trans('form-builder::buttons.confirm-message');
 
         return parent::toSchema();
     }

@@ -17,6 +17,19 @@ class FormRequestMakeCommand extends RequestMakeCommand
 
     protected $name = 'make:form-request';
 
+    /**
+     * Discards the `make:request` signature inherited from RequestMakeCommand.
+     *
+     * Laravel names a command from its signature when one is set, and only falls
+     * back to `$name` when there is none. Since 13.24 commands are registered
+     * lazily under the name in their #[AsCommand] attribute, so an inherited
+     * signature makes the instance name itself `make:request` while the lazy map
+     * points `make:form-request` at this class — and Symfony then reports the
+     * command as registered under multiple names. Arguments and options come from
+     * getArguments() and getOptions() instead.
+     */
+    protected $signature = null;
+
     protected $type = 'Form Request';
 
     protected $description = 'Create a new form request class for a FormBuilder Form';
@@ -63,8 +76,8 @@ class FormRequestMakeCommand extends RequestMakeCommand
         }
 
         return is_dir(app_path('Forms'))
-            ? $rootNamespace . 'Forms\\' . $form
-            : $rootNamespace . $form;
+            ? $rootNamespace.'Forms\\'.$form
+            : $rootNamespace.$form;
     }
 
     protected function guessFormName($name): string
@@ -79,15 +92,15 @@ class FormRequestMakeCommand extends RequestMakeCommand
             return $formName;
         }
 
-        if (class_exists($formName . 'Form')) {
-            return $formName . 'Form';
+        if (class_exists($formName.'Form')) {
+            return $formName.'Form';
         }
 
         if (is_dir(app_path('Forms/'))) {
-            return $this->rootNamespace() . 'Forms\Form';
+            return $this->rootNamespace().'Forms\Form';
         }
 
-        return $this->rootNamespace() . 'Form';
+        return $this->rootNamespace().'Form';
     }
 
     protected function getOptions(): array
