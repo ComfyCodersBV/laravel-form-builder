@@ -2,6 +2,14 @@
 
 All notable changes to `laravel-form-builder` will be documented in this file.
 
+## 1.0.1 - unreleased
+
+* Add a `theme` config block — `wrapper`, `label`, `help` and `error` — carried in the schema, so any renderer inherits
+  the same classes. A key left `null` or empty keeps the renderer's own default rather than blanking it.
+* Add `->theme([...])` on every field, overriding the form-wide theme for that field only. Repeated calls merge.
+* `SCHEMA_VERSION` is now `1.1`. This is an addition a renderer may safely ignore, so the major is unchanged and older
+  renderers keep working.
+
 ## 1.0.0 - 2026-08-04
 
 First release. This package is the PHP half of `laravel-vue-form-builder`, extracted so a renderer for another frontend

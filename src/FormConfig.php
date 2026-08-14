@@ -22,7 +22,7 @@ class FormConfig implements JsonSerializable
      * Renderers compare their supported version against this and refuse to render
      * silently wrong output.
      */
-    public const SCHEMA_VERSION = '1.0';
+    public const SCHEMA_VERSION = '1.1';
 
     protected ?AbstractForm $configurator = null;
 
@@ -157,7 +157,25 @@ class FormConfig implements JsonSerializable
             'fields' => $schemas,
             'formClass' => $this->getClass(),
             'method' => $this->getMethod(),
+            'theme' => $this->getTheme(),
         ];
+    }
+
+    /**
+     * The form-wide theme, with unset keys dropped so a renderer keeps its own
+     * default for those rather than being handed a null to interpret.
+     *
+     * @return array<string, string>
+     */
+    protected function getTheme(): array
+    {
+        $theme = config('form-builder.theme', []);
+
+        if (! is_array($theme)) {
+            return [];
+        }
+
+        return array_filter($theme, fn ($classes) => is_string($classes) && $classes !== '');
     }
 
     public function getRules(): array

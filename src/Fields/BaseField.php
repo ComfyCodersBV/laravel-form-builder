@@ -13,11 +13,17 @@ abstract class BaseField implements JsonSerializable
     use Macroable;
 
     protected string $type;
+
     private ?string $name = null;
+
     protected ?string $label = null;
+
     protected ?string $condition = null;
+
     protected array $rules = [];
+
     protected array $attributes = [];
+
     protected mixed $default = null;
 
     public function attributes(array $attributes): static
@@ -73,7 +79,7 @@ abstract class BaseField implements JsonSerializable
 
     public static function make(?string $name = null): static
     {
-        $instance = new static();
+        $instance = new static;
         $instance->name = $name;
 
         return $instance;
@@ -100,6 +106,24 @@ abstract class BaseField implements JsonSerializable
         if ($required) {
             $this->rules[] = 'required';
         }
+
+        return $this;
+    }
+
+    /**
+     * Override theme classes for this field only.
+     *
+     * Keys not given fall back to the form-wide theme, and keys absent there
+     * fall back to the renderer's own defaults.
+     *
+     * @param  array<string, string>  $classes
+     */
+    public function theme(array $classes): static
+    {
+        $this->attributes['theme'] = array_merge(
+            $this->attributes['theme'] ?? [],
+            $classes,
+        );
 
         return $this;
     }

@@ -5,6 +5,32 @@ declare(strict_types=1);
 // config for TranquilTools/FormBuilder
 return [
 
+    /*
+    |--------------------------------------------------------------------------
+    | Theme
+    |--------------------------------------------------------------------------
+    |
+    | Classes for the wrapper, label, help text and error message that every
+    | field renders around its own control. These travel in the schema, so any
+    | renderer inherits them.
+    |
+    | A key left null keeps the renderer's own default. The Vue renderer uses:
+    |
+    |   'wrapper' => 'space-y-1'
+    |   'label'   => 'block text-sm font-medium text-neutral-800 dark:text-neutral-200'
+    |   'help'    => 'mt-1 text-xs text-neutral-500 dark:text-neutral-400'
+    |   'error'   => 'text-sm text-red-600'
+    |
+    | Override a single field instead with ->theme(['label' => '...']).
+    |
+    */
+    'theme' => [
+        'wrapper' => null,
+        'label' => null,
+        'help' => null,
+        'error' => null,
+    ],
+
     'wysiwyg' => [
 
         /*
