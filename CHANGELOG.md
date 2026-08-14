@@ -2,7 +2,7 @@
 
 All notable changes to `laravel-form-builder` will be documented in this file.
 
-## 1.0.1 - unreleased
+## 1.0.1 - 2026-08-14
 
 * Add a `theme` config block — `wrapper`, `label`, `help` and `error` — carried in the schema, so any renderer inherits
   the same classes. A key left `null` or empty keeps the renderer's own default rather than blanking it.
