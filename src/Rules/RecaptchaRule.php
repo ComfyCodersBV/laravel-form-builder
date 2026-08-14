@@ -21,20 +21,35 @@ class RecaptchaRule implements ValidationRule
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        if (! config('form-builder.recaptcha.enabled', true)) {
+        $message = $this->failureMessage($value);
+
+        if (is_null($message)) {
             return;
+        }
+
+        $fail($message);
+    }
+
+    /**
+     * The reason this value is unacceptable, or null when it is fine.
+     *
+     * The decision lives here rather than in validate() so that the `recaptcha`
+     * validator registered on the Validator facade can reuse it. That extension
+     * has to answer with a boolean and has no $fail closure to hand over, and
+     * faking one would mean lying about the callable ValidationRule expects.
+     */
+    public function failureMessage(mixed $value): ?string
+    {
+        if (! config('form-builder.recaptcha.enabled', true)) {
+            return null;
         }
 
         if (empty(config('form-builder.recaptcha.secret_key'))) {
-            $fail(trans('form-builder::recaptcha.not-configured'));
-
-            return;
+            return $this->translate('not-configured');
         }
 
         if (empty($value)) {
-            $fail(trans('form-builder::recaptcha.validation-failed'));
-
-            return;
+            return $this->translate('validation-failed');
         }
 
         try {
@@ -45,33 +60,35 @@ class RecaptchaRule implements ValidationRule
             ]);
 
             if (! $response->successful()) {
-                $fail(trans('form-builder::recaptcha.validation-failed'));
-
-                return;
+                return $this->translate('validation-failed');
             }
 
             $data = $response->json();
 
             if (! $data['success']) {
-                $fail(trans('form-builder::recaptcha.validation-failed'));
-
-                return;
+                return $this->translate('validation-failed');
             }
 
             if ($this->action && ($data['action'] ?? '') !== $this->action) {
-                $fail(trans('form-builder::recaptcha.validation-failed'));
-
-                return;
+                return $this->translate('validation-failed');
             }
 
             $score = $data['score'] ?? 0;
-            if ($score < $this->minScore) {
-                $fail(trans('form-builder::recaptcha.validation-failed'));
 
-                return;
+            if ($score < $this->minScore) {
+                return $this->translate('validation-failed');
             }
         } catch (Exception $e) {
-            $fail(trans('form-builder::recaptcha.validation-failed'));
+            return $this->translate('validation-failed');
         }
+
+        return null;
+    }
+
+    private function translate(string $key): string
+    {
+        $message = trans("form-builder::recaptcha.{$key}");
+
+        return is_string($message) ? $message : $key;
     }
 }

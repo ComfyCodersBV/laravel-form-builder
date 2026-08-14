@@ -8,6 +8,12 @@ use Illuminate\Support\HtmlString;
 use Illuminate\Support\Traits\Macroable;
 use JsonSerializable;
 
+/**
+ * @phpstan-consistent-constructor
+ *
+ * Field types are constructed through make(), which sets the name afterwards,
+ * so a subclass that took constructor arguments could never receive them.
+ */
 abstract class BaseField implements JsonSerializable
 {
     use Macroable;

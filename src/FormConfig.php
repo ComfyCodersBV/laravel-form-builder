@@ -11,6 +11,9 @@ use JsonSerializable;
 use TranquilTools\FormBuilder\Fields\BaseField;
 use TranquilTools\FormBuilder\Fields\Radio;
 
+/**
+ * @phpstan-consistent-constructor
+ */
 class FormConfig implements JsonSerializable
 {
     /**

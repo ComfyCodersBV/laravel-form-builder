@@ -39,14 +39,7 @@ class FormBuilderServiceProvider extends PackageServiceProvider
             $action = $parameters[0] ?? null;
             $minScore = isset($parameters[1]) ? (float) $parameters[1] : null;
 
-            $rule = new RecaptchaRule($action, $minScore);
-            $passes = true;
-
-            $rule->validate($attribute, $value, function ($message) use (&$passes) {
-                $passes = false;
-            });
-
-            return $passes;
+            return is_null((new RecaptchaRule($action, $minScore))->failureMessage($value));
         }, trans('form-builder::recaptcha.validation-failed'));
     }
 

@@ -3,9 +3,13 @@ includes:
 
 parameters:
     level: 5
+    # config/ is analysed by larastan as if it were an application's config
+    # directory, which it is not: it is a package default that an application
+    # publishes. Every env() call in it is therefore reported as being outside
+    # the config directory, which is wrong. There is no code to analyse there
+    # either — the file returns an array.
     paths:
         - src
-        - config
     tmpDir: build/phpstan
     checkOctaneCompatibility: true
     checkModelProperties: true
