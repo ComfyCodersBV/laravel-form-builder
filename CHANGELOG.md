@@ -2,6 +2,15 @@
 
 All notable changes to `laravel-form-builder` will be documented in this file.
 
+## 1.1.0 - 2026-10-01
+
+* `Button`, `Submit` and `DeleteButton` accept an `HtmlString` as label, for an icon or markup on the button. The schema
+  carries it as `labelHtml`; `label` keeps the plain text of it (or the default label when the HTML has no text), so a
+  confirm dialog or a renderer without HTML support still has something to show.
+* Add `->ariaLabel(string)` on buttons, for icon-only buttons that need an accessible name.
+* `SCHEMA_VERSION` is now `1.2`. Both keys are additions a renderer may safely ignore.
+* Code style: Pint now formats the whole package with the Laravel preset.
+
 ## 1.0.1 - 2026-08-14
 
 * Add a `theme` config block — `wrapper`, `label`, `help` and `error` — carried in the schema, so any renderer inherits

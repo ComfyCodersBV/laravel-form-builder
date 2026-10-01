@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace TranquilTools\FormBuilder\Fields;
 
+use Illuminate\Support\HtmlString;
+
 class Button extends BaseField
 {
     protected string $type = 'button';
@@ -17,6 +19,32 @@ class Button extends BaseField
     protected ?string $deleteUrl = null;
 
     protected ?string $variant = null;
+
+    protected ?string $labelHtml = null;
+
+    protected ?string $ariaLabel = null;
+
+    public function label(string|HtmlString $label): static
+    {
+        if ($label instanceof HtmlString) {
+            $this->labelHtml = $label->toHtml();
+            $text = trim(strip_tags($this->labelHtml));
+            $this->label = $text === '' ? null : $text;
+
+            return $this;
+        }
+
+        $this->labelHtml = null;
+
+        return parent::label($label);
+    }
+
+    public function ariaLabel(string $label): static
+    {
+        $this->ariaLabel = $label;
+
+        return $this;
+    }
 
     public function cancelLabel(string $label): static
     {
@@ -67,6 +95,8 @@ class Button extends BaseField
             'confirmMessage' => $this->confirmMessage,
             'deleteUrl' => $this->deleteUrl,
             'variant' => $this->variant,
+            'labelHtml' => $this->labelHtml,
+            'ariaLabel' => $this->ariaLabel,
         ]));
     }
 }

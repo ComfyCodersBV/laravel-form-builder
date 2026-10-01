@@ -10,6 +10,6 @@ trait HasStubs
     {
         return file_exists($customPath = $this->laravel->basePath(trim($stub, '/')))
             ? $customPath
-            : dirname(__FILE__, 4) . $stub;
+            : dirname(__FILE__, 4).$stub;
     }
 }

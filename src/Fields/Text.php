@@ -15,7 +15,7 @@ class Text extends BaseField
     public function maxLength(int $value): static
     {
         $this->attributes['maxlength'] = $value;
-        $this->rules[] = 'max:' . $value;
+        $this->rules[] = 'max:'.$value;
 
         return $this;
     }
@@ -23,7 +23,7 @@ class Text extends BaseField
     public function minLength(int $value): static
     {
         $this->attributes['minlength'] = $value;
-        $this->rules[] = 'min:' . $value;
+        $this->rules[] = 'min:'.$value;
 
         return $this;
     }

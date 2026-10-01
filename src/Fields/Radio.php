@@ -10,8 +10,8 @@ use TranquilTools\FormBuilder\Fields\Traits\HasValue;
 
 class Radio extends BaseField
 {
-    use HasOptions;
     use HasInline;
+    use HasOptions;
     use HasValue;
 
     protected string $type = 'radio';
@@ -23,7 +23,9 @@ class Radio extends BaseField
 
         $normalizeOptions = function ($options): array {
             $out = [];
-            if ($options === null) return $out;
+            if ($options === null) {
+                return $out;
+            }
             if (is_array($options)) {
                 $isAssoc = array_keys($options) !== range(0, count($options) - 1);
 
@@ -41,7 +43,7 @@ class Radio extends BaseField
                             'value' => $opt['value'],
                             'label' => (string) ($opt['label'] ?? $opt['value']),
                         ];
-                    } else if (is_string($opt) || is_numeric($opt)) {
+                    } elseif (is_string($opt) || is_numeric($opt)) {
                         $out[] = ['value' => $opt, 'label' => (string) $opt];
                     }
                 }
@@ -74,7 +76,7 @@ class Radio extends BaseField
                     ];
                 }
 
-                $g =& $groups[$name]['group'];
+                $g = &$groups[$name]['group'];
                 $groups[$name]['firstIndex'] = min($groups[$name]['firstIndex'], $i);
                 $g['inline'] = $g['inline'] || (bool) ($schema['inline'] ?? false);
                 $g['options'][] = array_filter([
@@ -82,7 +84,7 @@ class Radio extends BaseField
                     'label' => $schema['label'] ?? (string) $schema['value'],
                     'help' => $schema['help'] ?? null,
                     'disabled' => isset($schema['disabled']),
-                ], fn($v) => $v !== null && $v !== false);
+                ], fn ($v) => $v !== null && $v !== false);
 
                 $skipIndex[$i] = true;
 
@@ -102,7 +104,7 @@ class Radio extends BaseField
                         ],
                     ];
                 } else {
-                    $g =& $groups[$name]['group'];
+                    $g = &$groups[$name]['group'];
                     $groups[$name]['firstIndex'] = min($groups[$name]['firstIndex'], $i);
                     $g['label'] = $g['label'] ?? ($schema['label'] ?? null);
                     $g['inline'] = $g['inline'] || (bool) ($schema['inline'] ?? false);

@@ -18,7 +18,7 @@ class File extends BaseField
 
         $this->attributes['accept'] = $mimetypes;
 
-        $this->rules[] = 'mimetypes:' . implode(',', $mimetypes);
+        $this->rules[] = 'mimetypes:'.implode(',', $mimetypes);
 
         return $this;
     }

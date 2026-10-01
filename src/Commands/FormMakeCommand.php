@@ -47,7 +47,7 @@ class FormMakeCommand extends GeneratorCommand
         $form = Str::studly($this->argument('name'));
 
         $this->call('make:form-request', [
-            'name' => $form . 'Request',
+            'name' => $form.'Request',
             '--form' => $this->qualifyClass($this->getNameInput()),
         ]);
     }
@@ -73,7 +73,7 @@ class FormMakeCommand extends GeneratorCommand
 
     protected function getDefaultNamespace($rootNamespace): string
     {
-        return $rootNamespace . '\Forms';
+        return $rootNamespace.'\Forms';
     }
 
     protected function getOptions(): array
