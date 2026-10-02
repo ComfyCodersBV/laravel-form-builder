@@ -2,6 +2,16 @@
 
 All notable changes to `laravel-form-builder` will be documented in this file.
 
+## 1.2.0 - 2026-10-02
+
+* Add a `Time` field (`TranquilTools\FormBuilder\Fields\Time`, type `time`) for a time of day as `HH:MM` (24h). It
+  validates with `date_format:H:i` and is `nullable` unless `->required()`.
+* `->step(int $minutes)` sets the interval of the suggested times (default 15, kept between 1 and 720). `->min('08:00')`
+  and `->max('18:00')` limit the range and add `after_or_equal` / `before_or_equal` rules. The field is clearable
+  unless required; `->clearable(bool)` overrides that.
+* `SCHEMA_VERSION` is now `1.3`. The new type needs laravel-vue-form-builder 1.5.0 or newer to render; an older
+  renderer shows its "Unknown field type" notice for it and keeps rendering every other field.
+
 ## 1.1.0 - 2026-10-01
 
 * `Button`, `Submit` and `DeleteButton` accept an `HtmlString` as label, for an icon or markup on the button. The schema

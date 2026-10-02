@@ -8,4 +8,5 @@ return [
     'search-placeholder' => 'Search...',
     'no-results' => 'No results',
     'choose-option' => 'Choose an option',
+    'clear' => 'Clear field',
 ];
