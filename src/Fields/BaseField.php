@@ -162,6 +162,11 @@ abstract class BaseField implements JsonSerializable
         return $this->rules;
     }
 
+    public function normalizeValue(mixed $value): mixed
+    {
+        return $value;
+    }
+
     public function toSchema(): array
     {
         $schema = [

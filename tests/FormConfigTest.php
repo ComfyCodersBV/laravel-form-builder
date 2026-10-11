@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use TranquilTools\FormBuilder\Fields\DateTime;
 use TranquilTools\FormBuilder\Fields\Radio;
+use TranquilTools\FormBuilder\Fields\Section;
 use TranquilTools\FormBuilder\Fields\Select;
 use TranquilTools\FormBuilder\Fields\Text;
 use TranquilTools\FormBuilder\FormConfig;
@@ -125,3 +127,27 @@ it('throws when validation fails', function () {
 
     $config->validate(Request::create('/', 'POST', []));
 })->throws(ValidationException::class);
+
+it('emits the application locale unless one is set', function () {
+    app()->setLocale('nl');
+
+    expect(FormConfig::make()->jsonSerialize()['locale'])->toBe('nl')
+        ->and(FormConfig::make()->locale('de')->jsonSerialize()['locale'])->toBe('de');
+});
+
+it('converts date values to the application timezone while validating', function () {
+    config()->set('app.timezone', 'UTC');
+
+    $config = FormConfig::make([
+        Section::make()->fields([
+            DateTime::make('starts_at')->timezone('Europe/Amsterdam')->rules(['required', 'date']),
+        ]),
+        Text::make('title'),
+    ]);
+
+    $validated = $config->validate(Request::create('/', 'POST', [
+        'starts_at' => '2026-07-01T10:00:00+02:00',
+    ]));
+
+    expect($validated)->toBe(['starts_at' => '2026-07-01 08:00:00']);
+});

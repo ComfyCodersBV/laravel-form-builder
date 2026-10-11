@@ -2,6 +2,23 @@
 
 All notable changes to `laravel-form-builder` will be documented in this file.
 
+## 1.3.0 - 2026-10-11
+
+* `Date` and `DateTime` take `->timezone(?string)`: an IANA name, or `Date::BROWSER_TIMEZONE` for the user's own. A
+  default for every field lives in the new `dates.timezone` config key (`null`, so nothing changes until set). A date
+  field with a time then sends its timezone and the application timezone in the schema, and the renderer submits ISO
+  8601 with an offset. `FormConfig::validate()` converts those values to the application timezone as `Y-m-d H:i:s`;
+  `FormConfig::normalizeValues()` and `BaseField::normalizeValue()` do the same for a FormRequest.
+* `File` takes `->current(?string $url, ?string $name = null)` to show the stored file, `->preview(bool)` for its
+  thumbnail and `->removable(bool $removable = true, ?string $flag = null)` for a remove checkbox. The flag defaults to
+  `remove_{name}`, gets a `nullable|boolean` rule and is read back with `->removalRequested($request)`.
+* Add a `Section` layout element (type `section`) with `->title()`, `->description()` and `->fields([...])`. It holds no
+  value; the rules of its fields are collected as if they were top-level fields.
+* The schema carries the form `locale`, `app()->getLocale()` unless set with `->locale()`, so a renderer can pick its
+  built-in texts.
+* `SCHEMA_VERSION` is now `1.4`. Sections need laravel-vue-form-builder 1.6.0 or newer; an older renderer shows its
+  "Unknown field type" notice in place of a section and the fields inside it.
+
 ## 1.2.0 - 2026-10-02
 
 * Add a `Time` field (`TranquilTools\FormBuilder\Fields\Time`, type `time`) for a time of day as `HH:MM` (24h). It

@@ -10,6 +10,7 @@ use Illuminate\Support\Str;
 use JsonSerializable;
 use TranquilTools\FormBuilder\Fields\BaseField;
 use TranquilTools\FormBuilder\Fields\Radio;
+use TranquilTools\FormBuilder\Fields\Section;
 
 /**
  * @phpstan-consistent-constructor
@@ -25,7 +26,7 @@ class FormConfig implements JsonSerializable
      * Renderers compare their supported version against this and refuse to render
      * silently wrong output.
      */
-    public const SCHEMA_VERSION = '1.3';
+    public const SCHEMA_VERSION = '1.4';
 
     protected ?AbstractForm $configurator = null;
 
@@ -43,6 +44,8 @@ class FormConfig implements JsonSerializable
     protected string $action = '';
 
     protected string $method = 'POST';
+
+    protected ?string $locale = null;
 
     public function __construct(array $fields = [])
     {
@@ -103,6 +106,18 @@ class FormConfig implements JsonSerializable
         return $this;
     }
 
+    public function locale(?string $locale): static
+    {
+        $this->locale = $locale;
+
+        return $this;
+    }
+
+    public function getLocale(): string
+    {
+        return $this->locale ?? app()->getLocale();
+    }
+
     public function getId(): string
     {
         if ($this->id !== '') {
@@ -161,6 +176,7 @@ class FormConfig implements JsonSerializable
             'formClass' => $this->getClass(),
             'method' => $this->getMethod(),
             'theme' => $this->getTheme(),
+            'locale' => $this->getLocale(),
         ];
     }
 
@@ -187,7 +203,7 @@ class FormConfig implements JsonSerializable
             $this->getFields(),
             function (array $carry, BaseField $field): array {
                 $name = $field->getName();
-                if ($name !== null && $name !== '') {
+                if ($name !== null && $name !== '' && ! $field instanceof Section) {
                     $carry[$name] = $field->getRules();
                 }
 
@@ -207,6 +223,47 @@ class FormConfig implements JsonSerializable
     {
         $request = $request ?? request();
 
-        return $request->validate($this->getRules(), ...$params);
+        return $this->normalizeValues($request->validate($this->getRules(), ...$params));
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    public function normalizeValues(array $data): array
+    {
+        foreach ($this->valueFields($this->getFields()) as $field) {
+            $name = $field->getName();
+
+            if (! is_null($name) && array_key_exists($name, $data)) {
+                $data[$name] = $field->normalizeValue($data[$name]);
+            }
+        }
+
+        return $data;
+    }
+
+    /**
+     * @param  array<int, BaseField>  $fields
+     * @return list<BaseField>
+     */
+    protected function valueFields(array $fields): array
+    {
+        $flattened = [];
+
+        foreach ($fields as $field) {
+            if ($field instanceof Section) {
+                $flattened = [
+                    ...$flattened,
+                    ...$this->valueFields($field->getFields()),
+                ];
+
+                continue;
+            }
+
+            $flattened[] = $field;
+        }
+
+        return $flattened;
     }
 }
