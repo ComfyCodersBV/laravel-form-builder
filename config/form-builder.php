@@ -35,6 +35,31 @@ return [
         'timezone' => null,
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Money
+    |--------------------------------------------------------------------------
+    |
+    | The currency a Money field uses unless it sets ->currency('...').
+    |
+    */
+    'money' => [
+        'currency' => 'EUR',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Translatable
+    |--------------------------------------------------------------------------
+    |
+    | The locales a Translatable field offers unless it sets ->locales([...]).
+    | Null falls back to the application locale only.
+    |
+    */
+    'translatable' => [
+        'locales' => null,
+    ],
+
     'wysiwyg' => [
 
         /*
