@@ -83,6 +83,19 @@ abstract class BaseField implements JsonSerializable
         return $this;
     }
 
+    public function hideLabel(bool $hidden = true): static
+    {
+        if ($hidden) {
+            $this->attributes['hideLabel'] = true;
+
+            return $this;
+        }
+
+        unset($this->attributes['hideLabel']);
+
+        return $this;
+    }
+
     public static function make(?string $name = null): static
     {
         $instance = new static;

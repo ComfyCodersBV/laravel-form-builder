@@ -26,7 +26,7 @@ class FormConfig implements JsonSerializable
      * Renderers compare their supported version against this and refuse to render
      * silently wrong output.
      */
-    public const SCHEMA_VERSION = '1.4';
+    public const SCHEMA_VERSION = '1.5';
 
     protected ?AbstractForm $configurator = null;
 
@@ -46,6 +46,12 @@ class FormConfig implements JsonSerializable
     protected string $method = 'POST';
 
     protected ?string $locale = null;
+
+    protected bool $resetOnSuccess = false;
+
+    protected bool $submitOnChange = false;
+
+    protected ?bool $fillFromQuery = null;
 
     public function __construct(array $fields = [])
     {
@@ -113,6 +119,27 @@ class FormConfig implements JsonSerializable
         return $this;
     }
 
+    public function resetOnSuccess(bool $reset = true): static
+    {
+        $this->resetOnSuccess = $reset;
+
+        return $this;
+    }
+
+    public function submitOnChange(bool $submit = true): static
+    {
+        $this->submitOnChange = $submit;
+
+        return $this;
+    }
+
+    public function fillFromQuery(bool $fill = true): static
+    {
+        $this->fillFromQuery = $fill;
+
+        return $this;
+    }
+
     public function getLocale(): string
     {
         return $this->locale ?? app()->getLocale();
@@ -162,7 +189,7 @@ class FormConfig implements JsonSerializable
         $schemas = array_map(fn ($field) => $field->toSchema(), $this->getFields());
         $schemas = Radio::normalize($schemas);
 
-        $defaults = $this->getData();
+        $defaults = $this->defaults();
         if ($defaults === []) {
             $defaults = (object) [];
         }
@@ -177,7 +204,47 @@ class FormConfig implements JsonSerializable
             'method' => $this->getMethod(),
             'theme' => $this->getTheme(),
             'locale' => $this->getLocale(),
+            'resetOnSuccess' => $this->resetOnSuccess,
+            'submitOnChange' => $this->submitOnChange,
         ];
+    }
+
+    /**
+     * @return Model|array<string, mixed>
+     */
+    protected function defaults(): Model|array
+    {
+        $data = $this->getData();
+
+        if (! $this->fillsFromQuery()) {
+            return $data;
+        }
+
+        $query = request()->query();
+
+        $values = [];
+
+        foreach ($this->valueFields($this->getFields()) as $field) {
+            $name = $field->getName();
+
+            if (! is_null($name) && array_key_exists($name, $query)) {
+                $values[$name] = $query[$name];
+            }
+        }
+
+        if ($values === []) {
+            return $data;
+        }
+
+        return [
+            ...($data instanceof Model ? $data->toArray() : $data),
+            ...$values,
+        ];
+    }
+
+    protected function fillsFromQuery(): bool
+    {
+        return $this->fillFromQuery ?? strtoupper($this->getMethod()) === 'GET';
     }
 
     /**
