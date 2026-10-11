@@ -2,6 +2,31 @@
 
 All notable changes to `laravel-form-builder` will be documented in this file.
 
+## 1.4.0 - 2026-10-11
+
+* Add a `Money` field (type `money`) for an amount stored as whole minor units (cents). `->currency('EUR')` (default
+  from the new `money.currency` config key), `->locale()`, `->decimals()` (follows the currency: `JPY` 0, `KWD` 3,
+  others 2), and `->minValue()`, `->maxValue()` and `->unsigned()` in major units that validate in minor units. It
+  validates `integer`, is `nullable` unless required, and normalises to an `int` or `null`. `toMinorUnits()` and
+  `toMajorUnits()` convert.
+* Add a `Translatable` field (type `translatable`) holding one value per locale: `->locales([...])` (default from the
+  new `translatable.locales` config key, else the app locale), `->localeLabels()`, `->defaultLocale()`,
+  `->field(Textarea::class)` or an instance, `->stacked()`. `->required()` requires the default locale,
+  `->requiredLocales([...])` exactly those, a required inner field every locale. Each locale is validated on its own
+  key (`body.nl`) with the inner field's rules; normalising keeps exactly the configured locales.
+* `Password` takes `->stored(bool)` to say a value is stored, and `->removable(bool, ?string $flag)` for a "remove the
+  stored value" flag with `removalRequested()`, the same as `File`. Both now share the `HasRemoveFlag` trait.
+* Add `->hideLabel()` on every field: the label is hidden visually but stays for screen readers.
+* `FormConfig` takes `->resetOnSuccess()` (clear the inputs after a successful submit) and `->submitOnChange()`
+  (submit on every change, for filter bars).
+* A `GET` form fills its defaults from the query string of the request (query values win over `fill()`), so a filter
+  form shows the filter the page was loaded with. `->fillFromQuery(bool)` turns this off, or on for other methods.
+* Radio options keep a `description`, an `href` and a `linkLabel` (from a list of arrays, or keyed options with an
+  array), and separate radios take `->description()` and `->link($href, $label)`. A link with a scheme other than
+  `http`, `https`, `mailto` or `tel` is dropped.
+* `SCHEMA_VERSION` is now `1.5`. The new types need laravel-vue-form-builder 1.7.0 or newer; an older renderer shows
+  its "Unknown field type" notice for `money` and `translatable` and ignores the other additions.
+
 ## 1.3.0 - 2026-10-11
 
 * `Date` and `DateTime` take `->timezone(?string)`: an IANA name, or `Date::BROWSER_TIMEZONE` for the user's own. A
