@@ -14,45 +14,149 @@ class Radio extends BaseField
     use HasOptions;
     use HasValue;
 
+    private const OPTION_KEYS = [
+        'help',
+        'description',
+        'disabled',
+        'href',
+        'linkLabel',
+    ];
+
+    private const SAFE_SCHEMES = [
+        'http',
+        'https',
+        'mailto',
+        'tel',
+    ];
+
     protected string $type = 'radio';
+
+    public function description(string $description): static
+    {
+        $this->attributes['description'] = $description;
+
+        return $this;
+    }
+
+    public function link(string $href, string $label): static
+    {
+        $this->attributes['href'] = $href;
+        $this->attributes['linkLabel'] = $label;
+
+        return $this;
+    }
+
+    public function toSchema(): array
+    {
+        $schema = parent::toSchema();
+
+        if (isset($schema['href']) && ! self::isSafeHref($schema['href'])) {
+            unset($schema['href'], $schema['linkLabel']);
+        }
+
+        $options = $schema['options'] ?? null;
+
+        if (is_array($options) && array_filter($options, is_array(...)) !== []) {
+            $schema['options'] = self::normalizeOptions($options);
+        }
+
+        return $schema;
+    }
+
+    public static function isSafeHref(mixed $href): bool
+    {
+        if (! is_string($href) || trim($href) === '') {
+            return false;
+        }
+
+        $href = trim($href);
+
+        if (preg_match('/^[a-z][a-z0-9+.-]*:/i', $href) !== 1) {
+            return true;
+        }
+
+        $scheme = strtolower(strstr($href, ':', true) ?: '');
+
+        return in_array($scheme, self::SAFE_SCHEMES, true);
+    }
+
+    /**
+     * @param  array<string, mixed>  $option
+     * @return array<string, mixed>
+     */
+    public static function safeLink(array $option): array
+    {
+        if (! array_key_exists('href', $option) || self::isSafeHref($option['href'])) {
+            return $option;
+        }
+
+        unset($option['href'], $option['linkLabel']);
+
+        return $option;
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    public static function normalizeOptions(mixed $options): array
+    {
+        if (! is_array($options)) {
+            return [];
+        }
+
+        if (! array_is_list($options)) {
+            return array_map(
+                fn (mixed $value, mixed $label): array => is_array($label)
+                    ? self::normalizeOption(['value' => $value, ...$label])
+                    : ['value' => $value, 'label' => (string) $label],
+                array_keys($options),
+                $options,
+            );
+        }
+
+        $normalized = [];
+
+        foreach ($options as $option) {
+            if (is_array($option) && array_key_exists('value', $option)) {
+                $normalized[] = self::normalizeOption($option);
+
+                continue;
+            }
+
+            if (is_string($option) || is_numeric($option)) {
+                $normalized[] = ['value' => $option, 'label' => (string) $option];
+            }
+        }
+
+        return $normalized;
+    }
+
+    /**
+     * @param  array<string, mixed>  $option
+     * @return array<string, mixed>
+     */
+    private static function normalizeOption(array $option): array
+    {
+        $normalized = [
+            'value' => $option['value'],
+            'label' => (string) ($option['label'] ?? $option['value']),
+        ];
+
+        foreach (self::OPTION_KEYS as $key) {
+            if (array_key_exists($key, $option) && ! is_null($option[$key])) {
+                $normalized[$key] = $option[$key];
+            }
+        }
+
+        return self::safeLink($normalized);
+    }
 
     public static function normalize(array $schemas): array
     {
         $groups = [];
         $skipIndex = [];
 
-        $normalizeOptions = function ($options): array {
-            $out = [];
-            if ($options === null) {
-                return $out;
-            }
-            if (is_array($options)) {
-                $isAssoc = array_keys($options) !== range(0, count($options) - 1);
-
-                if ($isAssoc) {
-                    foreach ($options as $value => $label) {
-                        $out[] = ['value' => $value, 'label' => (string) $label];
-                    }
-
-                    return $out;
-                }
-
-                foreach ($options as $opt) {
-                    if (is_array($opt) && array_key_exists('value', $opt)) {
-                        $out[] = [
-                            'value' => $opt['value'],
-                            'label' => (string) ($opt['label'] ?? $opt['value']),
-                        ];
-                    } elseif (is_string($opt) || is_numeric($opt)) {
-                        $out[] = ['value' => $opt, 'label' => (string) $opt];
-                    }
-                }
-
-                return $out;
-            }
-
-            return $out;
-        };
+        $normalizeOptions = fn ($options): array => self::normalizeOptions($options);
 
         foreach ($schemas as $i => $schema) {
             if (! is_array($schema)) {
@@ -79,12 +183,15 @@ class Radio extends BaseField
                 $g = &$groups[$name]['group'];
                 $groups[$name]['firstIndex'] = min($groups[$name]['firstIndex'], $i);
                 $g['inline'] = $g['inline'] || (bool) ($schema['inline'] ?? false);
-                $g['options'][] = array_filter([
+                $g['options'][] = self::safeLink(array_filter([
                     'value' => $schema['value'],
                     'label' => $schema['label'] ?? (string) $schema['value'],
                     'help' => $schema['help'] ?? null,
+                    'description' => $schema['description'] ?? null,
                     'disabled' => isset($schema['disabled']),
-                ], fn ($v) => $v !== null && $v !== false);
+                    'href' => $schema['href'] ?? null,
+                    'linkLabel' => $schema['linkLabel'] ?? null,
+                ], fn ($v) => $v !== null && $v !== false));
 
                 $skipIndex[$i] = true;
 
