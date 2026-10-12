@@ -6,6 +6,9 @@ namespace TranquilTools\FormBuilder;
 
 use Illuminate\Http\Request;
 
+/**
+ * @phpstan-consistent-constructor
+ */
 abstract class AbstractForm
 {
     protected ?FormConfig $config = null;
@@ -45,6 +48,14 @@ abstract class AbstractForm
     public static function rules(...$arguments): array
     {
         return self::make(...$arguments)->getRules();
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public static function attributes(...$arguments): array
+    {
+        return self::make(...$arguments)->getAttributes();
     }
 
     public function validate(?Request $request = null, ...$params): array

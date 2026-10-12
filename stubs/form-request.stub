@@ -18,4 +18,9 @@ class {{ class }} extends FormRequest
     {
         return {{ form }}::rules();
     }
+
+    public function attributes(): array
+    {
+        return {{ form }}::attributes();
+    }
 }

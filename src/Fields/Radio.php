@@ -20,7 +20,10 @@ class Radio extends BaseField
         'disabled',
         'href',
         'linkLabel',
+        'target',
     ];
+
+    public const NEW_TAB = '_blank';
 
     private const SAFE_SCHEMES = [
         'http',
@@ -38,10 +41,21 @@ class Radio extends BaseField
         return $this;
     }
 
-    public function link(string $href, string $label): static
+    public function link(string $href, string $label, ?string $target = null): static
     {
         $this->attributes['href'] = $href;
         $this->attributes['linkLabel'] = $label;
+
+        if (! is_null($target)) {
+            $this->attributes['linkTarget'] = $target;
+        }
+
+        return $this;
+    }
+
+    public function openLinksInNewTab(bool $newTab = true): static
+    {
+        $this->attributes['linksInNewTab'] = $newTab;
 
         return $this;
     }
@@ -50,8 +64,15 @@ class Radio extends BaseField
     {
         $schema = parent::toSchema();
 
+        $newTab = (bool) ($schema['linksInNewTab'] ?? false);
+        unset($schema['linksInNewTab']);
+
         if (isset($schema['href']) && ! self::isSafeHref($schema['href'])) {
-            unset($schema['href'], $schema['linkLabel']);
+            unset($schema['href'], $schema['linkLabel'], $schema['linkTarget']);
+        }
+
+        if ($newTab && isset($schema['href'])) {
+            $schema['linkTarget'] ??= self::NEW_TAB;
         }
 
         $options = $schema['options'] ?? null;
@@ -60,7 +81,22 @@ class Radio extends BaseField
             $schema['options'] = self::normalizeOptions($options);
         }
 
+        if ($newTab && is_array($schema['options'] ?? null)) {
+            $schema['options'] = array_map(self::openInNewTab(...), $schema['options']);
+        }
+
         return $schema;
+    }
+
+    private static function openInNewTab(mixed $option): mixed
+    {
+        if (! is_array($option) || ! isset($option['href'])) {
+            return $option;
+        }
+
+        $option['target'] ??= self::NEW_TAB;
+
+        return $option;
     }
 
     public static function isSafeHref(mixed $href): bool
@@ -90,7 +126,7 @@ class Radio extends BaseField
             return $option;
         }
 
-        unset($option['href'], $option['linkLabel']);
+        unset($option['href'], $option['linkLabel'], $option['target']);
 
         return $option;
     }
@@ -191,6 +227,7 @@ class Radio extends BaseField
                     'disabled' => isset($schema['disabled']),
                     'href' => $schema['href'] ?? null,
                     'linkLabel' => $schema['linkLabel'] ?? null,
+                    'target' => $schema['linkTarget'] ?? null,
                 ], fn ($v) => $v !== null && $v !== false));
 
                 $skipIndex[$i] = true;

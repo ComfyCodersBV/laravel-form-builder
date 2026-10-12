@@ -46,6 +46,20 @@ abstract class BaseField implements JsonSerializable
         return $this;
     }
 
+    public function columnSpan(int $span): static
+    {
+        $this->attributes['columnSpan'] = max(1, min(Section::MAX_COLUMNS, $span));
+
+        return $this;
+    }
+
+    public function columnSpanFull(): static
+    {
+        $this->attributes['columnSpan'] = 'full';
+
+        return $this;
+    }
+
     public function default(mixed $value): static
     {
         $this->default = $value ?? '';
@@ -173,6 +187,14 @@ abstract class BaseField implements JsonSerializable
     public function getRules(): array
     {
         return $this->rules;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function validationAttributes(): array
+    {
+        return [];
     }
 
     public function normalizeValue(mixed $value): mixed

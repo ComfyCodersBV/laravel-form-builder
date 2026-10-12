@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use TranquilTools\FormBuilder\Fields\Money;
 use TranquilTools\FormBuilder\FormConfig;
@@ -37,10 +38,48 @@ it('validates whole minor units and is nullable unless required', function () {
 it('takes its bounds in major units and validates them in minor units', function () {
     $field = Money::make('amount_cents')->minValue(0.5)->maxValue(1000);
 
-    expect($field->getRules())->toBe(['nullable', 'integer', 'min:50', 'max:100000'])
-        ->and($field->toSchema()['min'])->toBe(50)
+    $passes = fn (Money $money, mixed $value): bool => Validator::make(['a' => $value], ['a' => $money->getRules()])->passes();
+
+    expect($field->toSchema()['min'])->toBe(50)
         ->and($field->toSchema()['max'])->toBe(100000)
-        ->and(Money::make('a')->unsigned()->getRules())->toContain('min:0');
+        ->and($passes($field, 50))->toBeTrue()
+        ->and($passes($field, '100000'))->toBeTrue()
+        ->and($passes($field, 49))->toBeFalse()
+        ->and($passes($field, 100001))->toBeFalse()
+        ->and($passes(Money::make('a')->unsigned(), -1))->toBeFalse()
+        ->and($passes(Money::make('a')->unsigned(), null))->toBeTrue();
+});
+
+it('names its bounds in major units with the currency', function (string $locale, int $value, string $expected) {
+    app()->setLocale($locale);
+
+    $field = Money::make('price_cents')->label('Price')->minValue(0.5)->maxValue(1000);
+
+    try {
+        FormConfig::make([$field])->validate(Request::create('/', 'POST', ['price_cents' => $value]));
+    } catch (ValidationException $e) {
+        expect(preg_replace('/\s/u', ' ', $e->errors()['price_cents'][0]))->toContain($expected)
+            ->and($e->errors()['price_cents'][0])->toContain('€')
+            ->and($e->errors()['price_cents'][0])->not->toContain('100000');
+
+        return;
+    }
+
+    $this->fail('The amount should have been rejected.');
+})->with([
+    ['en', 100001, 'must not be greater than'],
+    ['en', 100001, '1,000.00'],
+    ['en', 49, '0.50'],
+    ['nl', 100001, 'mag niet groter zijn dan'],
+    ['nl', 100001, '1.000,00'],
+    ['nl', 49, '0,50'],
+]);
+
+it('formats the bound in the currency of the field', function () {
+    $rule = Money::make('a')->currency('JPY')->locale('en')->maxValue(5000)->boundsRule();
+
+    expect($rule->format(5000))->toContain('5,000')
+        ->and($rule->format(5000))->not->toContain('.00');
 });
 
 it('converts between major and minor units', function () {

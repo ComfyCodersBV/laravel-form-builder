@@ -9,4 +9,5 @@ return [
     'no-results' => 'Geen resultaten',
     'choose-option' => 'Kies een optie',
     'clear' => 'Veld leegmaken',
+    'translatable-attribute' => ':label (:locale)',
 ];

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace TranquilTools\FormBuilder\Fields;
 
+use Illuminate\Support\Facades\Lang;
 use InvalidArgumentException;
+use Locale;
 
 class Translatable extends BaseField
 {
@@ -186,6 +188,56 @@ class Translatable extends BaseField
         }
 
         return $rules;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function validationAttributes(): array
+    {
+        $name = $this->getName();
+
+        if (is_null($name) || $name === '') {
+            return [];
+        }
+
+        $label = $this->label ?? str_replace('_', ' ', $name);
+
+        $attributes = [];
+
+        foreach ($this->getLocales() as $locale) {
+            $attributes["{$name}.{$locale}"] = trans('form-builder::fields.translatable-attribute', [
+                'label' => $label,
+                'locale' => $this->localeName($locale),
+            ]);
+        }
+
+        return $attributes;
+    }
+
+    public function localeName(string $locale): string
+    {
+        $configured = config('form-builder.translatable.locale_names');
+
+        if (is_array($configured) && is_string($configured[$locale] ?? null)) {
+            return $configured[$locale];
+        }
+
+        $key = 'form-builder::locales.'.strtolower(str_replace('_', '-', $locale));
+
+        if (Lang::has($key)) {
+            return trans($key);
+        }
+
+        if (class_exists(Locale::class)) {
+            $name = Locale::getDisplayLanguage($locale, app()->getLocale());
+
+            if ($name !== false && $name !== $locale) {
+                return mb_convert_case(mb_substr($name, 0, 1), MB_CASE_UPPER).mb_substr($name, 1);
+            }
+        }
+
+        return $this->localeLabels[$locale] ?? strtoupper($locale);
     }
 
     public function normalizeValue(mixed $value): mixed

@@ -23,10 +23,10 @@ class FormMakeCommand extends GeneratorCommand
 
     protected $description = 'Create a new form class';
 
-    public function handle(): int
+    public function handle(): ?bool
     {
         if (parent::handle() === false && ! $this->option('force')) {
-            return self::FAILURE;
+            return false;
         }
 
         if (
@@ -39,7 +39,7 @@ class FormMakeCommand extends GeneratorCommand
             $this->createRequest();
         }
 
-        return self::SUCCESS;
+        return null;
     }
 
     protected function createRequest(): void

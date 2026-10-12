@@ -26,7 +26,7 @@ class FormConfig implements JsonSerializable
      * Renderers compare their supported version against this and refuse to render
      * silently wrong output.
      */
-    public const SCHEMA_VERSION = '1.5';
+    public const SCHEMA_VERSION = '1.6';
 
     protected ?AbstractForm $configurator = null;
 
@@ -286,11 +286,34 @@ class FormConfig implements JsonSerializable
         );
     }
 
+    /**
+     * @return array<string, string>
+     */
+    public function getAttributes(): array
+    {
+        $attributes = [];
+
+        foreach ($this->valueFields($this->getFields()) as $field) {
+            $attributes = [
+                ...$attributes,
+                ...$field->validationAttributes(),
+            ];
+        }
+
+        return $attributes;
+    }
+
     public function validate(?Request $request = null, ...$params): array
     {
         $request = $request ?? request();
 
-        return $this->normalizeValues($request->validate($this->getRules(), ...$params));
+        $messages = $params['messages'] ?? $params[0] ?? [];
+        $attributes = $params['attributes'] ?? $params[1] ?? [];
+
+        return $this->normalizeValues($request->validate($this->getRules(), $messages, [
+            ...$this->getAttributes(),
+            ...$attributes,
+        ]));
     }
 
     /**

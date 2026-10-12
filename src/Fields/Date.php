@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace TranquilTools\FormBuilder\Fields;
 
+use DateTimeInterface;
 use Illuminate\Support\Carbon;
 use Throwable;
+use TranquilTools\FormBuilder\Rules\AvailableDate;
 
 class Date extends BaseField
 {
@@ -14,6 +16,12 @@ class Date extends BaseField
     protected string $type = 'date';
 
     protected ?string $timezone = null;
+
+    /** @var list<int> */
+    protected array $disabledWeekdays = [];
+
+    /** @var list<string|array{from?: string, to?: string}> */
+    protected array $disabledDates = [];
 
     public function range(bool $range = true): static
     {
@@ -47,6 +55,50 @@ class Date extends BaseField
         $this->attributes['maxDate'] = $date;
 
         return $this;
+    }
+
+    /**
+     * @param  array<int, int>  $weekdays
+     */
+    public function disabledWeekdays(array $weekdays): static
+    {
+        $this->disabledWeekdays = AvailableDate::normalizeWeekdays($weekdays);
+
+        return $this;
+    }
+
+    /**
+     * @param  array<int, string|DateTimeInterface|array<string, string|DateTimeInterface|null>>  $dates
+     */
+    public function disabledDates(array $dates): static
+    {
+        $this->disabledDates = [
+            ...$this->disabledDates,
+            ...AvailableDate::normalizeDates($dates),
+        ];
+
+        return $this;
+    }
+
+    public function availabilityRule(): ?AvailableDate
+    {
+        $rule = new AvailableDate($this->disabledWeekdays, $this->disabledDates);
+
+        return $rule->isEmpty() ? null : $rule;
+    }
+
+    public function getRules(): array
+    {
+        $rule = $this->availabilityRule();
+
+        if (is_null($rule)) {
+            return parent::getRules();
+        }
+
+        return [
+            ...parent::getRules(),
+            $rule,
+        ];
     }
 
     /**
@@ -110,13 +162,18 @@ class Date extends BaseField
 
     public function toSchema(): array
     {
+        $schema = array_merge(parent::toSchema(), array_filter([
+            'disabledWeekdays' => $this->disabledWeekdays,
+            'disabledDates' => $this->disabledDates,
+        ]));
+
         $timezone = $this->getTimezone();
 
         if (is_null($timezone)) {
-            return parent::toSchema();
+            return $schema;
         }
 
-        return array_merge(parent::toSchema(), [
+        return array_merge($schema, [
             'timezone' => $timezone,
             'serverTimezone' => $this->applicationTimezone(),
         ]);

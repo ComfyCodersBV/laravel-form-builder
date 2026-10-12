@@ -22,3 +22,21 @@ pest:
     paths:
       - vendor/
   rules: *default_rules
+
+phpstan:
+  stage: test
+  image: php:8.5-cli
+  before_script:
+    - apt-get update && apt-get install -y git unzip libzip-dev
+    - docker-php-ext-install zip
+    - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+    - composer install --no-interaction --prefer-dist --no-progress
+  script:
+    - vendor/bin/phpstan analyse --no-progress --memory-limit=1G
+  cache:
+    key:
+      files:
+        - composer.json
+    paths:
+      - vendor/
+  rules: *default_rules

@@ -68,3 +68,39 @@ it('recognises safe links', function (string $href, bool $safe) {
     ['vbscript:x', false],
     ['data:text/html,x', false],
 ]);
+
+it('keeps a link target per option', function () {
+    $schema = Radio::make('unit')->options([
+        ['value' => 1, 'label' => 'Hall', 'href' => '/units/1', 'linkLabel' => 'Open', 'target' => '_blank'],
+        ['value' => 2, 'label' => 'Attic', 'href' => 'javascript:alert(1)', 'linkLabel' => 'Evil', 'target' => '_blank'],
+    ])->toSchema();
+
+    expect($schema['options'])->toBe([
+        ['value' => 1, 'label' => 'Hall', 'href' => '/units/1', 'linkLabel' => 'Open', 'target' => '_blank'],
+        ['value' => 2, 'label' => 'Attic'],
+    ]);
+});
+
+it('opens every option link in a new tab on request', function () {
+    $schema = Radio::make('unit')
+        ->options([
+            ['value' => 1, 'label' => 'Hall', 'href' => '/units/1', 'linkLabel' => 'Open'],
+            ['value' => 2, 'label' => 'Attic', 'href' => '/units/2', 'linkLabel' => 'Open', 'target' => '_self'],
+            ['value' => 3, 'label' => 'Cellar'],
+        ])
+        ->openLinksInNewTab()
+        ->toSchema();
+
+    expect(array_column($schema['options'], 'target', 'value'))->toBe([1 => '_blank', 2 => '_self'])
+        ->and($schema)->not->toHaveKey('linksInNewTab');
+});
+
+it('carries the link target of separate radios into the group', function () {
+    $schemas = Radio::normalize([
+        Radio::make('plan')->value('a')->label('A')->link('https://example.com/a', 'Terms', Radio::NEW_TAB)->toSchema(),
+        Radio::make('plan')->value('b')->label('B')->link('/plans/b', 'Terms')->openLinksInNewTab()->toSchema(),
+        Radio::make('plan')->value('c')->label('C')->link('/plans/c', 'Terms')->toSchema(),
+    ]);
+
+    expect(array_column($schemas[0]['options'], 'target', 'value'))->toBe(['a' => '_blank', 'b' => '_blank']);
+});

@@ -2,6 +2,35 @@
 
 All notable changes to `laravel-form-builder` will be documented in this file.
 
+## 1.5.0 - 2026-10-12
+
+* `Date` takes `->disabledWeekdays([0, 6])` (0 = Sunday … 6 = Saturday) and `->disabledDates([...])` with `Y-m-d`
+  strings, date objects and `['from' => ..., 'to' => ...]` ranges (either end may be left out). The schema carries
+  them as `disabledWeekdays` and `disabledDates`, and the field adds the new `Rules\AvailableDate` rule, so the server
+  rejects a disabled date as well ("The :attribute cannot be on that date.", English and Dutch). It reads the calendar
+  date at the start of the value, also with a time or an offset; for a range it checks the start and the end. Use
+  `new AvailableDate($weekdays, $dates)` on its own in any validator.
+* `Section` takes `->columns(int)` (1 to 4) to place its fields side by side, and every field takes `->columnSpan(int)`
+  and `->columnSpanFull()`. A nested section without columns inherits those of the section around it.
+* Radio options keep a `target`; `->link($href, $label, ?string $target)` takes one for a separate radio, and
+  `->openLinksInNewTab()` gives every link of the field `_blank` (`Radio::NEW_TAB`) unless it has its own target. An
+  unsafe link drops its target with it.
+* Translatable fields name their locale inputs for validation messages: `title.en` becomes "Title (English)", or
+  "Title (Engels)" in Dutch. `FormConfig::getAttributes()` and `AbstractForm::attributes()` return them,
+  `FormConfig::validate()` passes them on (attributes passed to `validate()` win), and the `make:form-request` stub
+  now returns them from `attributes()`. Locale names come from the new `translatable.locale_names` config key, the
+  package translations (English and Dutch names for about twenty languages), the `intl` extension, or the upper-cased
+  code. Every field has a `validationAttributes()` hook, empty by default.
+* `Money` bounds validate with the new `Rules\MoneyBounds` rule instead of `min:`/`max:` in minor units, so the message
+  names the amount in major units with its currency in the field locale: "The price must not be greater than
+  €1,000.00." / "Prijs mag niet groter zijn dan € 1.000,00.". Formatting uses `intl` when installed and a built-in
+  fallback otherwise. `getRules()` holds the rule object in place of the two strings.
+* Fix the PHPStan errors: `AbstractForm` declares a consistent constructor for `new static`, and
+  `FormMakeCommand::handle()` returns `?bool` like the command it extends. An existing class without `--force` still
+  stops before asking for a request, now with exit code 0 like Laravel's own generators. CI now runs PHPStan.
+* `SCHEMA_VERSION` is now `1.6`. The new keys need laravel-vue-form-builder 1.8.0 or newer; an older renderer ignores
+  them and keeps working, while the server-side rules and messages work with any renderer.
+
 ## 1.4.0 - 2026-10-11
 
 * Add a `Money` field (type `money`) for an amount stored as whole minor units (cents). `->currency('EUR')` (default

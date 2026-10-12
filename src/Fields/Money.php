@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace TranquilTools\FormBuilder\Fields;
 
+use TranquilTools\FormBuilder\Rules\MoneyBounds;
+
 class Money extends BaseField
 {
     private const ZERO_DECIMAL_CURRENCIES = [
@@ -136,17 +138,30 @@ class Money extends BaseField
 
         $presence = in_array('required', $rules, true) ? [] : ['nullable'];
 
-        $bounds = array_filter([
-            is_null($this->min) ? null : 'min:'.$this->min,
-            is_null($this->max) ? null : 'max:'.$this->max,
-        ]);
-
-        return array_values(array_unique([
+        $rules = array_values(array_unique([
             ...$presence,
             ...$rules,
             'integer',
-            ...$bounds,
-        ]));
+        ], SORT_REGULAR));
+
+        $bounds = $this->boundsRule();
+
+        return is_null($bounds) ? $rules : [...$rules, $bounds];
+    }
+
+    public function boundsRule(): ?MoneyBounds
+    {
+        if (is_null($this->min) && is_null($this->max)) {
+            return null;
+        }
+
+        return new MoneyBounds(
+            $this->min,
+            $this->max,
+            $this->getCurrency(),
+            $this->getDecimals(),
+            $this->locale,
+        );
     }
 
     public function normalizeValue(mixed $value): mixed

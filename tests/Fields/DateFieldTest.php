@@ -2,8 +2,13 @@
 
 declare(strict_types=1);
 
+use Carbon\CarbonImmutable;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 use TranquilTools\FormBuilder\Fields\Date;
 use TranquilTools\FormBuilder\Fields\DateTime;
+use TranquilTools\FormBuilder\FormConfig;
 
 it('renders the date type', function () {
     expect(Date::make('published_at')->toSchema()['type'])->toBe('date');
@@ -87,3 +92,68 @@ it('converts a value with an offset to the application timezone', function () {
 it('leaves values untouched without a timezone', function () {
     expect(DateTime::make('starts_at')->normalizeValue('2026-10-11T14:30:00+02:00'))->toBe('2026-10-11T14:30:00+02:00');
 });
+
+it('describes the disabled weekdays and dates', function () {
+    $schema = Date::make('on')
+        ->disabledWeekdays([6, 0, 0, 9])
+        ->disabledDates([
+            '2026-12-25',
+            CarbonImmutable::parse('2026-12-31'),
+            ['from' => '2026-07-20', 'to' => '2026-08-02'],
+        ])
+        ->toSchema();
+
+    expect($schema['disabledWeekdays'])->toBe([0, 6])
+        ->and($schema['disabledDates'])->toBe([
+            '2026-12-25',
+            '2026-12-31',
+            ['from' => '2026-07-20', 'to' => '2026-08-02'],
+        ])
+        ->and(Date::make('on')->toSchema())->not->toHaveKeys(['disabledWeekdays', 'disabledDates'])
+        ->and(Date::make('on')->getRules())->toBe([]);
+});
+
+it('rejects a disabled date on the server', function (mixed $value, bool $passes) {
+    $field = Date::make('on')
+        ->disabledWeekdays([0, 6])
+        ->disabledDates([
+            '2026-10-14',
+            ['from' => '2026-12-21', 'to' => '2027-01-03'],
+            ['from' => '2027-06-01'],
+        ]);
+
+    expect(Validator::make(['on' => $value], ['on' => $field->getRules()])->passes())->toBe($passes);
+})->with([
+    'a weekday' => ['2026-10-12', true],
+    'a saturday' => ['2026-10-17', false],
+    'a sunday' => ['2026-10-18', false],
+    'a disabled date' => ['2026-10-14', false],
+    'inside a range' => ['2026-12-30', false],
+    'the last day of a range' => ['2027-01-04', true],
+    'an open-ended range' => ['2027-06-02', false],
+    'a date with a time' => ['2026-10-17 10:00', false],
+    'an ISO value with an offset' => ['2026-10-13T23:30:00+02:00', true],
+    'a range end on a disabled day' => [['start' => '2026-10-12', 'end' => '2026-10-17'], false],
+    'a range on open days' => [['start' => '2026-10-12', 'end' => '2026-10-13'], true],
+    'an empty value' => [null, true],
+]);
+
+it('says why a disabled date is rejected', function () {
+    try {
+        FormConfig::make([Date::make('arrival_on')->label('Arrival')->disabledWeekdays([0])])
+            ->validate(Request::create('/', 'POST', ['arrival_on' => '2026-10-18']));
+    } catch (ValidationException $e) {
+        expect($e->errors()['arrival_on'][0])->toBe('The arrival on cannot be on that date.');
+
+        return;
+    }
+
+    $this->fail('The sunday should have been rejected.');
+});
+
+it('refuses a disabled date it cannot read', function (mixed $date) {
+    Date::make('on')->disabledDates([$date]);
+})->with([
+    'not a date' => ['next friday'],
+    'an empty range' => [['until' => '2026-01-01']],
+])->throws(InvalidArgumentException::class);

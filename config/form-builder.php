@@ -58,6 +58,7 @@ return [
     */
     'translatable' => [
         'locales' => null,
+        'locale_names' => null,
     ],
 
     'wysiwyg' => [

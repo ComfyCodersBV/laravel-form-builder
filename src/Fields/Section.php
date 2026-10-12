@@ -8,6 +8,8 @@ use Illuminate\Support\HtmlString;
 
 class Section extends BaseField
 {
+    public const MAX_COLUMNS = 4;
+
     protected string $type = 'section';
 
     /** @var list<BaseField> */
@@ -25,6 +27,13 @@ class Section extends BaseField
         $this->attributes['description'] = $description instanceof HtmlString
             ? $description->toHtml()
             : e($description);
+
+        return $this;
+    }
+
+    public function columns(int $columns): static
+    {
+        $this->attributes['columns'] = max(1, min(self::MAX_COLUMNS, $columns));
 
         return $this;
     }

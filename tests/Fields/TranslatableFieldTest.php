@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use TranquilTools\FormBuilder\AbstractForm;
 use TranquilTools\FormBuilder\Fields\Money;
+use TranquilTools\FormBuilder\Fields\Section;
 use TranquilTools\FormBuilder\Fields\Text;
 use TranquilTools\FormBuilder\Fields\Textarea;
 use TranquilTools\FormBuilder\Fields\Translatable;
@@ -96,3 +98,63 @@ it('switches to stacked inputs', function () {
 it('refuses a class that is no field', function () {
     Translatable::make('body')->field(stdClass::class);
 })->throws(InvalidArgumentException::class);
+
+it('names every locale input after its label and locale', function () {
+    $form = FormConfig::make([
+        Translatable::make('title')->label('Title')->locales(['nl', 'en', 'xx']),
+        Translatable::make('meta_description')->locales(['nl']),
+        Text::make('slug')->label('Slug'),
+    ]);
+
+    expect($form->getAttributes())->toBe([
+        'title.nl' => 'Title (Dutch)',
+        'title.en' => 'Title (English)',
+        'title.xx' => 'Title (XX)',
+        'meta_description.nl' => 'meta description (Dutch)',
+    ]);
+
+    app()->setLocale('nl');
+
+    expect($form->getAttributes()['title.nl'])->toBe('Title (Nederlands)');
+});
+
+it('takes locale names from the config', function () {
+    config()->set('form-builder.translatable.locale_names', ['nl' => 'NL-BE']);
+
+    expect(Translatable::make('title')->label('Title')->locales(['nl', 'en'])->validationAttributes())->toBe([
+        'title.nl' => 'Title (NL-BE)',
+        'title.en' => 'Title (English)',
+    ]);
+});
+
+it('uses the attribute names in its validation messages', function () {
+    $form = FormConfig::make([
+        Translatable::make('title')->label('Title')->locales(['nl', 'en'])->requiredLocales(['nl', 'en']),
+    ]);
+
+    try {
+        $form->validate(Request::create('/', 'POST', ['title' => ['nl' => 'Hallo']]), [], ['title.nl' => 'Own name']);
+    } catch (ValidationException $e) {
+        expect($e->errors()['title.en'][0])->toBe('The Title (English) field is required.');
+
+        return;
+    }
+
+    $this->fail('The English title should have been required.');
+});
+
+it('collects the attribute names inside sections and from a form class', function () {
+    $form = new class extends AbstractForm
+    {
+        public function fields(): array
+        {
+            return [
+                Section::make()->fields([
+                    Translatable::make('title')->label('Title')->locales(['en']),
+                ]),
+            ];
+        }
+    };
+
+    expect($form::attributes())->toBe(['title.en' => 'Title (English)']);
+});

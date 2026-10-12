@@ -71,3 +71,24 @@ it('validates fields inside a section', function () {
 
     expect($validated)->toBe(['email' => 'jane@example.com']);
 });
+
+it('lays out its fields in columns and lets a field span them', function () {
+    $schema = Section::make()
+        ->columns(3)
+        ->fields([
+            Text::make('street')->columnSpan(2),
+            Text::make('number'),
+            Text::make('notes')->columnSpanFull(),
+            Section::make()->columns(1)->fields([Text::make('city')]),
+        ])
+        ->toSchema();
+
+    expect($schema['columns'])->toBe(3)
+        ->and($schema['fields'][0]['columnSpan'])->toBe(2)
+        ->and($schema['fields'][1])->not->toHaveKey('columnSpan')
+        ->and($schema['fields'][2]['columnSpan'])->toBe('full')
+        ->and($schema['fields'][3]['columns'])->toBe(1)
+        ->and(Section::make()->toSchema())->not->toHaveKey('columns')
+        ->and(Section::make()->columns(9)->toSchema()['columns'])->toBe(4)
+        ->and(Text::make('a')->columnSpan(0)->toSchema()['columnSpan'])->toBe(1);
+});
