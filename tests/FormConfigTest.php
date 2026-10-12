@@ -9,6 +9,7 @@ use TranquilTools\FormBuilder\Fields\Radio;
 use TranquilTools\FormBuilder\Fields\Section;
 use TranquilTools\FormBuilder\Fields\Select;
 use TranquilTools\FormBuilder\Fields\Text;
+use TranquilTools\FormBuilder\Fields\Translatable;
 use TranquilTools\FormBuilder\FormConfig;
 
 it('collects rules keyed by field name', function () {
@@ -150,4 +151,85 @@ it('converts date values to the application timezone while validating', function
     ]));
 
     expect($validated)->toBe(['starts_at' => '2026-07-01 08:00:00']);
+});
+
+it('sends the form columns only when they are set', function () {
+    expect(FormConfig::make()->jsonSerialize())->not->toHaveKey('columns')
+        ->and(FormConfig::make()->columns(3)->jsonSerialize()['columns'])->toBe(3)
+        ->and(FormConfig::make()->columns(9)->getColumns())->toBe(4)
+        ->and(FormConfig::make()->columns(0)->getColumns())->toBe(1)
+        ->and(FormConfig::make()->columns(2)->columns(null)->jsonSerialize())->not->toHaveKey('columns');
+});
+
+it('names fields by their key in validation messages by default', function () {
+    $form = FormConfig::make([
+        Text::make('arrival_on')->label('Arrival')->rules(['required']),
+    ]);
+
+    expect($form->getAttributes())->toBe([]);
+
+    try {
+        $form->validate(Request::create('/', 'POST', []));
+    } catch (ValidationException $e) {
+        expect($e->errors()['arrival_on'][0])->toBe('The arrival on field is required.');
+
+        return;
+    }
+
+    $this->fail('The field should have been required.');
+});
+
+it('names fields by their label in validation messages when asked', function () {
+    $form = FormConfig::make([
+        Section::make()->fields([
+            Text::make('arrival_on')->label('Arrival')->rules(['required']),
+        ]),
+        Text::make('notes'),
+        Radio::make('plan')->value('starter')->label('Starter'),
+        Radio::make('plan')->value('pro')->label('Pro'),
+        Translatable::make('title')->label('Title')->locales(['en']),
+    ])->labelsAsAttributes();
+
+    expect($form->getAttributes())->toBe([
+        'arrival_on' => 'Arrival',
+        'title' => 'Title',
+        'title.en' => 'Title (English)',
+    ]);
+
+    try {
+        $form->validate(Request::create('/', 'POST', []));
+    } catch (ValidationException $e) {
+        expect($e->errors()['arrival_on'][0])->toBe('The Arrival field is required.');
+
+        return;
+    }
+
+    $this->fail('The field should have been required.');
+});
+
+it('lets explicit attributes win over labels', function () {
+    $form = FormConfig::make([
+        Text::make('arrival_on')->label('Arrival')->rules(['required']),
+    ])->labelsAsAttributes();
+
+    try {
+        $form->validate(Request::create('/', 'POST', []), [], ['arrival_on' => 'day of arrival']);
+    } catch (ValidationException $e) {
+        expect($e->errors()['arrival_on'][0])->toBe('The day of arrival field is required.');
+
+        return;
+    }
+
+    $this->fail('The field should have been required.');
+});
+
+it('names fields by their label for every form when configured', function () {
+    config()->set('form-builder.validation.label_attributes', true);
+
+    $fields = [
+        Text::make('arrival_on')->label('Arrival'),
+    ];
+
+    expect(FormConfig::make($fields)->getAttributes())->toBe(['arrival_on' => 'Arrival'])
+        ->and(FormConfig::make($fields)->labelsAsAttributes(false)->getAttributes())->toBe([]);
 });

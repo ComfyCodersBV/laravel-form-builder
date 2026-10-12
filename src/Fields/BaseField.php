@@ -189,6 +189,16 @@ abstract class BaseField implements JsonSerializable
         return $this->rules;
     }
 
+    public function getLabel(): ?string
+    {
+        return $this->label;
+    }
+
+    public function validationLabel(): ?string
+    {
+        return $this->label;
+    }
+
     /**
      * @return array<string, string>
      */

@@ -8,6 +8,7 @@ use DateTimeInterface;
 use Illuminate\Support\Carbon;
 use Throwable;
 use TranquilTools\FormBuilder\Rules\AvailableDate;
+use TranquilTools\FormBuilder\Rules\DateBounds;
 
 class Date extends BaseField
 {
@@ -22,6 +23,8 @@ class Date extends BaseField
 
     /** @var list<string|array{from?: string, to?: string}> */
     protected array $disabledDates = [];
+
+    protected ?bool $validateBounds = null;
 
     public function range(bool $range = true): static
     {
@@ -87,17 +90,42 @@ class Date extends BaseField
         return $rule->isEmpty() ? null : $rule;
     }
 
+    public function validateBounds(bool $validate = true): static
+    {
+        $this->validateBounds = $validate;
+
+        return $this;
+    }
+
+    public function boundsRule(): ?DateBounds
+    {
+        if (! ($this->validateBounds ?? (bool) config('form-builder.dates.validate_bounds', false))) {
+            return null;
+        }
+
+        $rule = new DateBounds(
+            $this->attributes['minDate'] ?? null,
+            $this->attributes['maxDate'] ?? null,
+            (bool) ($this->attributes['enableTime'] ?? false),
+        );
+
+        return $rule->isEmpty() ? null : $rule;
+    }
+
     public function getRules(): array
     {
-        $rule = $this->availabilityRule();
+        $extra = array_values(array_filter([
+            $this->availabilityRule(),
+            $this->boundsRule(),
+        ]));
 
-        if (is_null($rule)) {
+        if ($extra === []) {
             return parent::getRules();
         }
 
         return [
             ...parent::getRules(),
-            $rule,
+            ...$extra,
         ];
     }
 

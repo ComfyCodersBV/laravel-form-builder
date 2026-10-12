@@ -33,6 +33,11 @@ return [
 
     'dates' => [
         'timezone' => null,
+        'validate_bounds' => false,
+    ],
+
+    'validation' => [
+        'label_attributes' => false,
     ],
 
     /*

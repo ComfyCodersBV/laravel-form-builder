@@ -6,4 +6,6 @@ return [
     'date-unavailable' => ':Attribute kan niet op die datum vallen.',
     'money-min' => ':Attribute moet minimaal :amount zijn.',
     'money-max' => ':Attribute mag niet groter zijn dan :amount.',
+    'date-min' => ':Attribute moet op of na :date liggen.',
+    'date-max' => ':Attribute moet op of voor :date liggen.',
 ];

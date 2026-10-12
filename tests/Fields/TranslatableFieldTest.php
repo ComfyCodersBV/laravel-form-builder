@@ -158,3 +158,22 @@ it('collects the attribute names inside sections and from a form class', functio
 
     expect($form::attributes())->toBe(['title.en' => 'Title (English)']);
 });
+
+it('prefers its own locale labels over the config, the translations and intl', function () {
+    config()->set('form-builder.translatable.locale_names', ['nl' => 'NL-BE', 'de' => 'Deutsch']);
+
+    $field = Translatable::make('title')
+        ->label('Title')
+        ->locales(['nl', 'en', 'de', 'fr'])
+        ->localeLabels([
+            'nl' => 'Nederlands',
+            'en' => 'Brits',
+        ]);
+
+    expect($field->validationAttributes())->toBe([
+        'title.nl' => 'Title (Nederlands)',
+        'title.en' => 'Title (Brits)',
+        'title.de' => 'Title (Deutsch)',
+        'title.fr' => 'Title (French)',
+    ]);
+});

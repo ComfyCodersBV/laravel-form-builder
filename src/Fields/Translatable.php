@@ -217,6 +217,10 @@ class Translatable extends BaseField
 
     public function localeName(string $locale): string
     {
+        if (isset($this->localeLabels[$locale])) {
+            return $this->localeLabels[$locale];
+        }
+
         $configured = config('form-builder.translatable.locale_names');
 
         if (is_array($configured) && is_string($configured[$locale] ?? null)) {
@@ -237,7 +241,7 @@ class Translatable extends BaseField
             }
         }
 
-        return $this->localeLabels[$locale] ?? strtoupper($locale);
+        return strtoupper($locale);
     }
 
     public function normalizeValue(mixed $value): mixed

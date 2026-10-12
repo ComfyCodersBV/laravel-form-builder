@@ -2,6 +2,28 @@
 
 All notable changes to `laravel-form-builder` will be documented in this file.
 
+## 1.6.0 - 2026-10-12
+
+* `Date` takes `->validateBounds()` to validate `->minDate()` and `->maxDate()` on the server with the new
+  `Rules\DateBounds` rule ("The :attribute must be on or after :date." / "on or before", English and Dutch). The new
+  `dates.validate_bounds` config key (default `false`) turns it on for every date field; `->validateBounds(false)` opts
+  one out. A `Y-m-d` bound compares the calendar date at the start of the value, also for a field with a time; a
+  `Y-m-d H:i` bound on a field with a time compares the moment, reading a value without offset and the bound in the
+  application timezone. For a range the start and the end are checked. Bounds that do not start with a date are not
+  validated. Off by default, so existing forms validate as before.
+* Fields can be named by their label in validation messages ("The Arrival field is required."): per form with
+  `FormConfig::labelsAsAttributes()`, or for every form with the new `validation.label_attributes` config key (default
+  `false`). The labels come back from `getAttributes()`, `AbstractForm::attributes()` and `validate()`; a field's own
+  attribute names (translatable) and attributes passed to `validate()` win. A separate radio with a `value()` is
+  skipped. Every field has `getLabel()` and a `validationLabel()` hook.
+* `FormConfig::columns(int)` (1 to 4) sets the column count of the whole form; the schema carries it as `columns`
+  only when set.
+* `Translatable::localeLabels()` now takes precedence over `translatable.locale_names`, the package translations and
+  `intl` for the validation attribute names. Before, it came after all of them and hardly ever applied; a field that
+  sets both `localeLabels()` and relies on another name now shows its own label.
+* `SCHEMA_VERSION` is now `1.7`. The new `columns` key needs laravel-vue-form-builder 1.9.0 or newer; an older renderer
+  ignores it.
+
 ## 1.5.1 - 2026-10-12
 
 * Fix a regression from 1.5.0: `AbstractForm` was marked `@phpstan-consistent-constructor`, so PHPStan reported

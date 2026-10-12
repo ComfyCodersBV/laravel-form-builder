@@ -60,6 +60,15 @@ class Radio extends BaseField
         return $this;
     }
 
+    public function validationLabel(): ?string
+    {
+        if (array_key_exists('value', $this->attributes)) {
+            return null;
+        }
+
+        return parent::validationLabel();
+    }
+
     public function toSchema(): array
     {
         $schema = parent::toSchema();

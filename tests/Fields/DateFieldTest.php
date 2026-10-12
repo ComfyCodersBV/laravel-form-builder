@@ -157,3 +157,79 @@ it('refuses a disabled date it cannot read', function (mixed $date) {
     'not a date' => ['next friday'],
     'an empty range' => [['until' => '2026-01-01']],
 ])->throws(InvalidArgumentException::class);
+
+it('leaves min and max dates to the browser unless asked', function () {
+    $field = Date::make('on')->minDate('2026-10-01')->maxDate('2026-10-31');
+
+    expect($field->getRules())->toBe([])
+        ->and($field->boundsRule())->toBeNull()
+        ->and(Validator::make(['on' => '2026-11-05'], ['on' => $field->getRules()])->passes())->toBeTrue();
+});
+
+it('validates min and max dates on the server', function (mixed $value, bool $passes) {
+    $field = Date::make('on')->minDate('2026-10-01')->maxDate('2026-10-31')->validateBounds();
+
+    expect(Validator::make(['on' => $value], ['on' => $field->getRules()])->passes())->toBe($passes);
+})->with([
+    'the first day' => ['2026-10-01', true],
+    'the last day' => ['2026-10-31', true],
+    'the day before' => ['2026-09-30', false],
+    'the day after' => ['2026-11-01', false],
+    'a late time on the last day' => ['2026-10-31 23:59', true],
+    'the calendar date of an offset value' => ['2026-10-31T23:30:00-05:00', true],
+    'a range inside' => [['start' => '2026-10-02', 'end' => '2026-10-30'], true],
+    'a range ending too late' => [['start' => '2026-10-02', 'end' => '2026-11-02'], false],
+    'a half range' => [['start' => '2026-09-01', 'end' => null], false],
+    'an empty value' => [null, true],
+]);
+
+it('validates the bounds of every date field when configured', function () {
+    config()->set('form-builder.dates.validate_bounds', true);
+
+    expect(Date::make('on')->minDate('2026-10-01')->boundsRule())->not->toBeNull()
+        ->and(Date::make('on')->minDate('2026-10-01')->validateBounds(false)->boundsRule())->toBeNull()
+        ->and(Date::make('on')->boundsRule())->toBeNull()
+        ->and(Date::make('on')->minDate('today')->boundsRule())->toBeNull();
+});
+
+it('compares the moment when a field with a time has a bound with a time', function (string $value, bool $passes) {
+    config()->set('app.timezone', 'UTC');
+
+    $field = DateTime::make('starts_at')
+        ->timezone('Europe/Amsterdam')
+        ->minDate('2026-10-12 09:00')
+        ->validateBounds();
+
+    expect(Validator::make(['starts_at' => $value], ['starts_at' => $field->getRules()])->passes())->toBe($passes);
+})->with([
+    'the bound itself' => ['2026-10-12 09:00', true],
+    'a minute early' => ['2026-10-12 08:59', false],
+    'eleven o\'clock in Amsterdam' => ['2026-10-12T11:00:00+02:00', true],
+    'ten to eleven in Amsterdam' => ['2026-10-12T10:50:00+02:00', false],
+]);
+
+it('compares calendar dates when a field with a time has a bound without one', function () {
+    $field = DateTime::make('starts_at')->minDate('2026-10-12')->validateBounds();
+
+    expect(Validator::make(['starts_at' => '2026-10-12T00:15:00+02:00'], ['starts_at' => $field->getRules()])->passes())->toBeTrue()
+        ->and(Validator::make(['starts_at' => '2026-10-11T23:45:00+02:00'], ['starts_at' => $field->getRules()])->passes())->toBeFalse();
+});
+
+it('says which bound a date crossed', function (string $locale, string $value, string $message) {
+    app()->setLocale($locale);
+
+    try {
+        FormConfig::make([Date::make('arrival_on')->minDate('2026-10-01')->maxDate('2026-10-31')->validateBounds()])
+            ->validate(Request::create('/', 'POST', ['arrival_on' => $value]));
+    } catch (ValidationException $e) {
+        expect($e->errors()['arrival_on'][0])->toBe($message);
+
+        return;
+    }
+
+    $this->fail('The date should have been rejected.');
+})->with([
+    ['en', '2026-09-30', 'The arrival on must be on or after 2026-10-01.'],
+    ['en', '2026-11-01', 'The arrival on must be on or before 2026-10-31.'],
+    ['nl', '2026-09-30', 'Arrival on moet op of na 2026-10-01 liggen.'],
+]);

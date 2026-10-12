@@ -26,7 +26,7 @@ class FormConfig implements JsonSerializable
      * Renderers compare their supported version against this and refuse to render
      * silently wrong output.
      */
-    public const SCHEMA_VERSION = '1.6';
+    public const SCHEMA_VERSION = '1.7';
 
     protected ?AbstractForm $configurator = null;
 
@@ -52,6 +52,10 @@ class FormConfig implements JsonSerializable
     protected bool $submitOnChange = false;
 
     protected ?bool $fillFromQuery = null;
+
+    protected ?int $columns = null;
+
+    protected ?bool $labelsAsAttributes = null;
 
     public function __construct(array $fields = [])
     {
@@ -140,6 +144,30 @@ class FormConfig implements JsonSerializable
         return $this;
     }
 
+    public function columns(?int $columns): static
+    {
+        $this->columns = is_null($columns) ? null : max(1, min(Section::MAX_COLUMNS, $columns));
+
+        return $this;
+    }
+
+    public function labelsAsAttributes(bool $labels = true): static
+    {
+        $this->labelsAsAttributes = $labels;
+
+        return $this;
+    }
+
+    public function getColumns(): ?int
+    {
+        return $this->columns;
+    }
+
+    public function usesLabelsAsAttributes(): bool
+    {
+        return $this->labelsAsAttributes ?? (bool) config('form-builder.validation.label_attributes', false);
+    }
+
     public function getLocale(): string
     {
         return $this->locale ?? app()->getLocale();
@@ -194,7 +222,7 @@ class FormConfig implements JsonSerializable
             $defaults = (object) [];
         }
 
-        return [
+        $payload = [
             'schemaVersion' => self::SCHEMA_VERSION,
             'id' => $this->getId(),
             'action' => $this->getAction(),
@@ -206,6 +234,15 @@ class FormConfig implements JsonSerializable
             'locale' => $this->getLocale(),
             'resetOnSuccess' => $this->resetOnSuccess,
             'submitOnChange' => $this->submitOnChange,
+        ];
+
+        if (is_null($this->columns)) {
+            return $payload;
+        }
+
+        return [
+            ...$payload,
+            'columns' => $this->columns,
         ];
     }
 
@@ -296,11 +333,33 @@ class FormConfig implements JsonSerializable
         foreach ($this->valueFields($this->getFields()) as $field) {
             $attributes = [
                 ...$attributes,
+                ...$this->labelAttribute($field),
                 ...$field->validationAttributes(),
             ];
         }
 
         return $attributes;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    protected function labelAttribute(BaseField $field): array
+    {
+        if (! $this->usesLabelsAsAttributes()) {
+            return [];
+        }
+
+        $name = $field->getName();
+        $label = $field->validationLabel();
+
+        if (is_null($name) || $name === '' || is_null($label) || $label === '') {
+            return [];
+        }
+
+        return [
+            $name => $label,
+        ];
     }
 
     public function validate(?Request $request = null, ...$params): array
