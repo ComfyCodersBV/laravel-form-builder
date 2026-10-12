@@ -2,6 +2,15 @@
 
 All notable changes to `laravel-form-builder` will be documented in this file.
 
+## 1.5.1 - 2026-10-12
+
+* Fix a regression from 1.5.0: `AbstractForm` was marked `@phpstan-consistent-constructor`, so PHPStan reported
+  `parameter.notOptional` on every form in an application whose constructor takes required arguments, although
+  `make()`, `rules()` and `attributes()` forward those arguments as before. The marker is gone and the package ignores
+  `new.static` on that one line instead, so applications need no ignore for their forms. Behaviour is unchanged.
+* PHPStan in CI now also analyses `tests/Fixtures`, which holds a form with required constructor arguments, so this
+  cannot come back unnoticed.
+
 ## 1.5.0 - 2026-10-12
 
 * `Date` takes `->disabledWeekdays([0, 6])` (0 = Sunday … 6 = Saturday) and `->disabledDates([...])` with `Y-m-d`

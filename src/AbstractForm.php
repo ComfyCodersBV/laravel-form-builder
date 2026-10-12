@@ -6,9 +6,6 @@ namespace TranquilTools\FormBuilder;
 
 use Illuminate\Http\Request;
 
-/**
- * @phpstan-consistent-constructor
- */
 abstract class AbstractForm
 {
     protected ?FormConfig $config = null;
@@ -20,7 +17,7 @@ abstract class AbstractForm
 
     public static function make(...$arguments): FormConfig
     {
-        $form = new static(...$arguments);
+        $form = new static(...$arguments); // @phpstan-ignore new.static (make() forwards the arguments to whichever constructor the form subclass declares)
 
         return $form->build();
     }

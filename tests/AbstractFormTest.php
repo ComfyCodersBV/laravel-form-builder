@@ -7,6 +7,7 @@ use Illuminate\Validation\ValidationException;
 use TranquilTools\FormBuilder\AbstractForm;
 use TranquilTools\FormBuilder\Fields\Text;
 use TranquilTools\FormBuilder\FormConfig;
+use TranquilTools\FormBuilder\Tests\Fixtures\FormWithRequiredArguments;
 
 class SampleProductForm extends AbstractForm
 {
@@ -58,3 +59,13 @@ it('throws when the request fails validation', function () {
 
     (new SampleProductForm)->validate($request);
 })->throws(ValidationException::class);
+
+it('passes constructor arguments through make() and rules()', function () {
+    expect(FormWithRequiredArguments::make('title', true)->getRules())->toBe([
+        'title' => ['required', 'string'],
+    ]);
+
+    expect(FormWithRequiredArguments::rules('summary', false))->toBe([
+        'summary' => ['nullable', 'string'],
+    ]);
+});
