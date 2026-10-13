@@ -26,7 +26,7 @@ class FormConfig implements JsonSerializable
      * Renderers compare their supported version against this and refuse to render
      * silently wrong output.
      */
-    public const SCHEMA_VERSION = '1.7';
+    public const SCHEMA_VERSION = '1.8';
 
     protected ?AbstractForm $configurator = null;
 
@@ -364,7 +364,7 @@ class FormConfig implements JsonSerializable
 
     public function validate(?Request $request = null, ...$params): array
     {
-        $request = $request ?? request();
+        $request = $this->prepareForValidation($request ?? request());
 
         $messages = $params['messages'] ?? $params[0] ?? [];
         $attributes = $params['attributes'] ?? $params[1] ?? [];
@@ -373,6 +373,32 @@ class FormConfig implements JsonSerializable
             ...$this->getAttributes(),
             ...$attributes,
         ]));
+    }
+
+    protected function prepareForValidation(Request $request): Request
+    {
+        $prepared = [];
+
+        foreach ($this->valueFields($this->getFields()) as $field) {
+            $name = $field->getName();
+
+            if (is_null($name) || $name === '' || ! $request->exists($name)) {
+                continue;
+            }
+
+            $value = $request->input($name);
+            $preparedValue = $field->prepareForValidation($value);
+
+            if ($preparedValue !== $value) {
+                $prepared[$name] = $preparedValue;
+            }
+        }
+
+        if ($prepared === []) {
+            return $request;
+        }
+
+        return $request->merge($prepared);
     }
 
     /**

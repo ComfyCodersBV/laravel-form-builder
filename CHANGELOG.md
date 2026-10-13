@@ -2,6 +2,28 @@
 
 All notable changes to `laravel-form-builder` will be documented in this file.
 
+## 1.7.0 - unreleased
+
+* Add a `Tags` field (`TranquilTools\FormBuilder\Fields\Tags`, type `tags`) whose value is a list of strings. It is
+  `nullable|array` unless `->required()`, and every entry gets a `string` rule (`<name>.*`). `->emails()` adds
+  `email:rfc` per entry, `->suggestions(string $url)` lets the renderer fetch `GET {url}?q=` for `[{value, label}]`, and
+  `->max(int)` limits the number of entries with a `max:` rule. `normalizeValue()` also takes a comma, semicolon or
+  newline separated string, trims entries and drops blanks and duplicates. Entries are named after the label in
+  validation messages.
+* Fields can prepare a value before validation with the new `BaseField::prepareForValidation()` hook (unchanged value by
+  default). `FormConfig::validate()` merges the prepared values into the request first, which is how a `Tags` field
+  accepts a comma separated string. Existing fields do not use it, so nothing changes for them.
+* `Files::current()` takes a list of current files (`key`, `name`, optional `size` and `url`), sent as `currentFiles`.
+  With `->removable()` the remove flag becomes a list of keys: `nullable|array`, with `<flag>.*` validated `in:` the
+  listed keys. The new `removedKeys(?Request): array` returns the posted keys that are listed; `removalRequested()` is
+  `true` when there is at least one. `File::current($url, $name)` and its boolean flag are unchanged, also on `Files`.
+* `Wysiwyg::profile(string)` picks a list of editor-agnostic features from the new `wysiwyg.profiles` config key, sent
+  as `profile` and `features`. It replaces the editor options from the config; options set with `->options()` are kept
+  and win in the renderer. The `email` profile (`bold`, `italic`, `underline`, `link`, `list`, `blockquote`) also works
+  with a published config that has no `profiles` key yet. An unknown profile throws an `InvalidArgumentException`.
+* `SCHEMA_VERSION` is now `1.8`. The new keys need laravel-vue-form-builder 1.10.0 or newer; an older renderer shows its
+  "Unknown field type" notice for `tags`, shows no list of current files and ignores profiles.
+
 ## 1.6.0 - 2026-10-12
 
 * `Date` takes `->validateBounds()` to validate `->minDate()` and `->maxDate()` on the server with the new

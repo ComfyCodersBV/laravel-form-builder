@@ -27,3 +27,42 @@ it('overrides the options', function () {
 
     expect($schema['options'])->toBe(['theme' => 'bubble']);
 });
+
+it('sends the features of a profile instead of the configured editor options', function () {
+    config()->set('form-builder.wysiwyg.profiles.email', ['bold', 'italic', 'link']);
+
+    $schema = Wysiwyg::make('body')->profile('email')->toSchema();
+
+    expect($schema['profile'])->toBe('email')
+        ->and($schema['features'])->toBe(['bold', 'italic', 'link'])
+        ->and($schema['options'])->toBe([]);
+});
+
+it('lets explicit options win over a profile in either order', function () {
+    config()->set('form-builder.wysiwyg.profiles.email', ['bold']);
+
+    $before = Wysiwyg::make('body')->options(['theme' => 'bubble'])->profile('email')->toSchema();
+    $after = Wysiwyg::make('body')->profile('email')->options(['theme' => 'bubble'])->toSchema();
+
+    expect($before['options'])->toBe(['theme' => 'bubble'])
+        ->and($before['features'])->toBe(['bold'])
+        ->and($after['options'])->toBe(['theme' => 'bubble'])
+        ->and($after['features'])->toBe(['bold']);
+});
+
+it('ships an email profile, also for a published config without profiles', function () {
+    expect(Wysiwyg::make('body')->profile('email')->toSchema()['features'])
+        ->toContain('bold', 'link', 'list', 'blockquote');
+
+    config()->set('form-builder.wysiwyg', [
+        'default-editor' => 'quill',
+        'editors' => [],
+    ]);
+
+    expect(Wysiwyg::make('body')->profile('email')->toSchema()['features'])
+        ->toBe(Wysiwyg::DEFAULT_PROFILES['email']);
+});
+
+it('refuses a profile that is not configured', function () {
+    Wysiwyg::make('body')->profile('unknown');
+})->throws(InvalidArgumentException::class);
