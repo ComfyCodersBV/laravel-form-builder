@@ -110,6 +110,17 @@ return [
                 ],
             ],
         ],
+
+        'profiles' => [
+            'email' => [
+                'bold',
+                'italic',
+                'underline',
+                'link',
+                'list',
+                'blockquote',
+            ],
+        ],
     ],
 
     'key_value' => [

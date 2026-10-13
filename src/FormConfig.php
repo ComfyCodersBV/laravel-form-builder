@@ -6,6 +6,7 @@ namespace TranquilTools\FormBuilder;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use JsonSerializable;
 use TranquilTools\FormBuilder\Fields\BaseField;
@@ -26,7 +27,7 @@ class FormConfig implements JsonSerializable
      * Renderers compare their supported version against this and refuse to render
      * silently wrong output.
      */
-    public const SCHEMA_VERSION = '1.7';
+    public const SCHEMA_VERSION = '1.8';
 
     protected ?AbstractForm $configurator = null;
 
@@ -364,7 +365,7 @@ class FormConfig implements JsonSerializable
 
     public function validate(?Request $request = null, ...$params): array
     {
-        $request = $request ?? request();
+        $request = $this->prepareForValidation($request ?? request());
 
         $messages = $params['messages'] ?? $params[0] ?? [];
         $attributes = $params['attributes'] ?? $params[1] ?? [];
@@ -373,6 +374,36 @@ class FormConfig implements JsonSerializable
             ...$this->getAttributes(),
             ...$attributes,
         ]));
+    }
+
+    protected function prepareForValidation(Request $request): Request
+    {
+        $input = $request->input();
+        $changedKeys = [];
+
+        foreach ($this->valueFields($this->getFields()) as $field) {
+            $name = $field->getName();
+
+            if (is_null($name) || $name === '' || ! Arr::has($input, $name)) {
+                continue;
+            }
+
+            $value = data_get($input, $name);
+            $preparedValue = $field->prepareForValidation($value);
+
+            if ($preparedValue === $value) {
+                continue;
+            }
+
+            data_set($input, $name, $preparedValue);
+            $changedKeys[] = Str::before($name, '.');
+        }
+
+        if ($changedKeys === []) {
+            return $request;
+        }
+
+        return $request->merge(Arr::only($input, array_unique($changedKeys)));
     }
 
     /**

@@ -207,6 +207,11 @@ abstract class BaseField implements JsonSerializable
         return [];
     }
 
+    public function prepareForValidation(mixed $value): mixed
+    {
+        return $value;
+    }
+
     public function normalizeValue(mixed $value): mixed
     {
         return $value;

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use TranquilTools\FormBuilder\Fields\File;
 use TranquilTools\FormBuilder\Fields\Files;
 use TranquilTools\FormBuilder\FormConfig;
@@ -72,4 +73,72 @@ it('validates the remove flag through the form', function () {
         ->validate(Request::create('/', 'POST', ['remove_avatar' => true]));
 
     expect($validated)->toBe(['remove_avatar' => true]);
+});
+
+it('describes a list of current files', function () {
+    $schema = Files::make('attachments')
+        ->current([
+            ['key' => 0, 'name' => 'offerte.pdf', 'size' => 81234, 'url' => 'https://cdn.test/files/offerte.pdf'],
+            ['key' => 'logo', 'url' => 'https://cdn.test/files/logo.png?v=3'],
+        ])
+        ->toSchema();
+
+    expect($schema['currentFiles'])->toBe([
+        ['key' => '0', 'name' => 'offerte.pdf', 'size' => 81234, 'url' => 'https://cdn.test/files/offerte.pdf'],
+        ['key' => 'logo', 'name' => 'logo.png', 'url' => 'https://cdn.test/files/logo.png?v=3'],
+    ])
+        ->and($schema)->not->toHaveKey('currentUrl')
+        ->and(Files::make('attachments')->current([])->toSchema())->not->toHaveKey('currentFiles');
+});
+
+it('keeps the single current file on a Files field given a url', function () {
+    $schema = Files::make('attachments')->current('/files/a.pdf', 'Contract.pdf')->toSchema();
+
+    expect($schema['currentUrl'])->toBe('/files/a.pdf')
+        ->and($schema['currentName'])->toBe('Contract.pdf')
+        ->and($schema)->not->toHaveKey('currentFiles');
+});
+
+it('validates removal keys against the current files', function () {
+    $field = Files::make('attachments')
+        ->current([
+            ['key' => 'a', 'name' => 'a.pdf'],
+            ['key' => 'b', 'name' => 'b.pdf'],
+        ])
+        ->removable();
+
+    $form = FormConfig::make([$field]);
+
+    expect($field->toSchema()['removeFlag'])->toBe('remove_attachments')
+        ->and(array_keys($field->nestedRules()))->toBe(['remove_attachments', 'remove_attachments.*'])
+        ->and($field->nestedRules()['remove_attachments'])->toBe(['nullable', 'array'])
+        ->and($form->validate(Request::create('/', 'POST', ['remove_attachments' => ['b']])))->toBe(['remove_attachments' => ['b']])
+        ->and(fn () => $form->validate(Request::create('/', 'POST', ['remove_attachments' => ['c']])))->toThrow(ValidationException::class)
+        ->and(fn () => $form->validate(Request::create('/', 'POST', ['remove_attachments' => '1'])))->toThrow(ValidationException::class);
+});
+
+it('reads the removed keys from the request', function () {
+    $field = Files::make('attachments')
+        ->current([
+            ['key' => 'a', 'name' => 'a.pdf'],
+            ['key' => 'b', 'name' => 'b.pdf'],
+        ])
+        ->removable();
+
+    $request = Request::create('/', 'POST', ['remove_attachments' => ['b', 'unknown']]);
+
+    expect($field->removedKeys($request))->toBe(['b'])
+        ->and($field->removalRequested($request))->toBeTrue()
+        ->and($field->removedKeys(Request::create('/', 'POST')))->toBe([])
+        ->and($field->removalRequested(Request::create('/', 'POST')))->toBeFalse();
+});
+
+it('reads no removed keys for a single current file', function () {
+    $field = File::make('avatar')->current('/files/a.jpg')->removable();
+
+    $request = Request::create('/', 'POST', ['remove_avatar' => '1']);
+
+    expect($field->removedKeys($request))->toBe([])
+        ->and($field->removalRequested($request))->toBeTrue()
+        ->and($field->nestedRules())->toBe(['remove_avatar' => ['nullable', 'boolean']]);
 });

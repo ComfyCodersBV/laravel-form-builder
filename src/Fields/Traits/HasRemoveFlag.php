@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace TranquilTools\FormBuilder\Fields\Traits;
 
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 trait HasRemoveFlag
 {
@@ -28,11 +29,45 @@ trait HasRemoveFlag
             return false;
         }
 
+        if (! is_null($this->removableKeys())) {
+            return $this->removedKeys($request) !== [];
+        }
+
         return ($request ?? request())->boolean($this->removeFlag);
     }
 
     /**
-     * @return array<string, array<int, string>>
+     * @return list<string>
+     */
+    public function removedKeys(?Request $request = null): array
+    {
+        $keys = $this->removableKeys();
+
+        if (is_null($this->removeFlag) || is_null($keys)) {
+            return [];
+        }
+
+        $requested = ($request ?? request())->input($this->removeFlag);
+
+        if (! is_array($requested)) {
+            return [];
+        }
+
+        $requested = array_map(fn (mixed $key): string => is_scalar($key) ? (string) $key : '', $requested);
+
+        return array_values(array_filter($keys, fn (string $key): bool => in_array($key, $requested, true)));
+    }
+
+    /**
+     * @return list<string>|null
+     */
+    protected function removableKeys(): ?array
+    {
+        return null;
+    }
+
+    /**
+     * @return array<string, array<int, mixed>>
      */
     public function nestedRules(): array
     {
@@ -40,10 +75,25 @@ trait HasRemoveFlag
             return [];
         }
 
+        $keys = $this->removableKeys();
+
+        if (is_null($keys)) {
+            return [
+                $this->removeFlag => [
+                    'nullable',
+                    'boolean',
+                ],
+            ];
+        }
+
         return [
             $this->removeFlag => [
                 'nullable',
-                'boolean',
+                'array',
+            ],
+            "{$this->removeFlag}.*" => [
+                'string',
+                Rule::in($keys),
             ],
         ];
     }
