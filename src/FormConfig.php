@@ -6,6 +6,7 @@ namespace TranquilTools\FormBuilder;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use JsonSerializable;
 use TranquilTools\FormBuilder\Fields\BaseField;
@@ -377,28 +378,32 @@ class FormConfig implements JsonSerializable
 
     protected function prepareForValidation(Request $request): Request
     {
-        $prepared = [];
+        $input = $request->input();
+        $changedKeys = [];
 
         foreach ($this->valueFields($this->getFields()) as $field) {
             $name = $field->getName();
 
-            if (is_null($name) || $name === '' || ! $request->exists($name)) {
+            if (is_null($name) || $name === '' || ! Arr::has($input, $name)) {
                 continue;
             }
 
-            $value = $request->input($name);
+            $value = data_get($input, $name);
             $preparedValue = $field->prepareForValidation($value);
 
-            if ($preparedValue !== $value) {
-                $prepared[$name] = $preparedValue;
+            if ($preparedValue === $value) {
+                continue;
             }
+
+            data_set($input, $name, $preparedValue);
+            $changedKeys[] = Str::before($name, '.');
         }
 
-        if ($prepared === []) {
+        if ($changedKeys === []) {
             return $request;
         }
 
-        return $request->merge($prepared);
+        return $request->merge(Arr::only($input, array_unique($changedKeys)));
     }
 
     /**

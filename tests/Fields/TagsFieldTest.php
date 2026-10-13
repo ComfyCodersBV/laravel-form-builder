@@ -2,8 +2,10 @@
 
 declare(strict_types=1);
 
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use TranquilTools\FormBuilder\Fields\Repeater;
 use TranquilTools\FormBuilder\Fields\Section;
 use TranquilTools\FormBuilder\Fields\Tags;
 use TranquilTools\FormBuilder\FormConfig;
@@ -107,4 +109,52 @@ it('accepts any text without email mode', function () {
         ->validate(Request::create('/', 'POST', ['labels' => ['not an address', 'urgent']]));
 
     expect($validated)->toBe(['labels' => ['not an address', 'urgent']]);
+});
+
+it('keeps rule objects among its rules', function () {
+    $rule = new class implements ValidationRule
+    {
+        public function validate(string $attribute, mixed $value, Closure $fail): void {}
+    };
+
+    $rules = Tags::make('labels')->rules([$rule])->getRules();
+
+    expect($rules)->toHaveCount(3)
+        ->and($rules[0])->toBe('nullable')
+        ->and($rules[1])->toBe('array')
+        ->and($rules[2])->toBe($rule);
+});
+
+it('validates and splits tags inside a repeater per row', function () {
+    $repeater = Repeater::make('contacts')->fields([
+        Tags::make('to')->emails(),
+    ]);
+
+    expect($repeater->nestedRules())->toBe([
+        'contacts.*.to' => ['nullable', 'array'],
+        'contacts.*.to.*' => ['string', 'email:rfc'],
+    ]);
+
+    $form = FormConfig::make([$repeater]);
+
+    expect($form->validate(Request::create('/', 'POST', ['contacts' => [['to' => 'jane@example.com; john@example.com']]])))
+        ->toBe(['contacts' => [['to' => ['jane@example.com', 'john@example.com']]]]);
+
+    try {
+        $form->validate(Request::create('/', 'POST', ['contacts' => [['to' => ['jane@example.com']], ['to' => 'nope, jane@example.com']]]));
+
+        $this->fail('The invalid address in the second row passed validation.');
+    } catch (ValidationException $e) {
+        expect(array_keys($e->errors()))->toBe(['contacts.1.to.0']);
+    }
+});
+
+it('splits the string of a tags field with a dotted name', function () {
+    $request = Request::create('/', 'POST', ['contact' => ['to' => 'jane@example.com, john@example.com', 'name' => 'Jane']]);
+
+    $validated = FormConfig::make([Tags::make('contact.to')->emails()])->validate($request);
+
+    expect($validated)->toBe(['contact' => ['to' => ['jane@example.com', 'john@example.com']]])
+        ->and($request->input('contact'))->toBe(['to' => ['jane@example.com', 'john@example.com'], 'name' => 'Jane'])
+        ->and(array_keys($request->all()))->toBe(['contact']);
 });

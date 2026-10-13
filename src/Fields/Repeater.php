@@ -119,13 +119,47 @@ class Repeater extends BaseField
 
             $subRules = $field->getRules();
 
-            if ($subRules === []) {
+            if ($subRules !== []) {
+                $rules["{$name}.*.{$subName}"] = $subRules;
+            }
+
+            if (! method_exists($field, 'nestedRules')) {
                 continue;
             }
 
-            $rules["{$name}.*.{$subName}"] = $subRules;
+            foreach ($field->nestedRules() as $nestedName => $nestedRules) {
+                $rules["{$name}.*.{$nestedName}"] = $nestedRules;
+            }
         }
 
         return $rules;
+    }
+
+    public function prepareForValidation(mixed $value): mixed
+    {
+        if (! is_array($value)) {
+            return $value;
+        }
+
+        return array_map(fn (mixed $row): mixed => $this->prepareRow($row), $value);
+    }
+
+    private function prepareRow(mixed $row): mixed
+    {
+        if (! is_array($row)) {
+            return $row;
+        }
+
+        foreach ($this->subFields as $field) {
+            $subName = $field->getName();
+
+            if (is_null($subName) || $subName === '' || ! array_key_exists($subName, $row)) {
+                continue;
+            }
+
+            $row[$subName] = $field->prepareForValidation($row[$subName]);
+        }
+
+        return $row;
     }
 }

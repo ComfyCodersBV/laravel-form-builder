@@ -21,6 +21,11 @@ All notable changes to `laravel-form-builder` will be documented in this file.
   as `profile` and `features`. It replaces the editor options from the config; options set with `->options()` are kept
   and win in the renderer. The `email` profile (`bold`, `italic`, `underline`, `link`, `list`, `blockquote`) also works
   with a published config that has no `profiles` key yet. An unknown profile throws an `InvalidArgumentException`.
+* `Repeater::nestedRules()` now also takes the nested rules of its fields, prefixed with `<name>.*.`, and
+  `Repeater::prepareForValidation()` prepares every row, so a `Tags` field inside a repeater validates each entry and
+  accepts a comma separated string. Fields with no nested rules validate as before.
+* `FormConfig::validate()` prepares a field with a dotted name (`contact.to`) inside the nested input instead of adding
+  a literal `contact.to` key.
 * `SCHEMA_VERSION` is now `1.8`. The new keys need laravel-vue-form-builder 1.10.0 or newer; an older renderer shows its
   "Unknown field type" notice for `tags`, shows no list of current files and ignores profiles.
 

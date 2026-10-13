@@ -61,12 +61,15 @@ class Tags extends BaseField
     {
         $rules = parent::getRules();
 
-        return array_values(array_unique([
+        return collect([
             in_array('required', $rules, true) ? 'required' : 'nullable',
             'array',
             ...(is_null($this->max) ? [] : ['max:'.$this->max]),
             ...$rules,
-        ]));
+        ])
+            ->unique(fn (mixed $rule): mixed => is_string($rule) ? $rule : spl_object_id($rule))
+            ->values()
+            ->all();
     }
 
     /**
