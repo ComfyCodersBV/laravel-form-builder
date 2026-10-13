@@ -2,7 +2,7 @@
 
 All notable changes to `laravel-form-builder` will be documented in this file.
 
-## 1.7.0 - unreleased
+## 1.7.0 - 2026-10-13
 
 * Add a `Tags` field (`TranquilTools\FormBuilder\Fields\Tags`, type `tags`) whose value is a list of strings. It is
   `nullable|array` unless `->required()`, and every entry gets a `string` rule (`<name>.*`). `->emails()` adds
