@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use TranquilTools\FormBuilder\Fields\DateTime;
@@ -232,4 +233,36 @@ it('names fields by their label for every form when configured', function () {
 
     expect(FormConfig::make($fields)->getAttributes())->toBe(['arrival_on' => 'Arrival'])
         ->and(FormConfig::make($fields)->labelsAsAttributes(false)->getAttributes())->toBe([]);
+});
+
+it('accepts rule objects as rules', function () {
+    $rule = new class implements ValidationRule
+    {
+        public function validate(string $attribute, mixed $value, Closure $fail): void
+        {
+            if ($value !== 'jane@example.com') {
+                $fail('Only Jane.');
+            }
+        }
+    };
+
+    $form = FormConfig::make([
+        Text::make('to')->rules('required', $rule),
+    ]);
+
+    expect($form->getRules()['to'])->toBe(['required', $rule])
+        ->and($form->validate(Request::create('/', 'POST', ['to' => 'jane@example.com'])))->toBe(['to' => 'jane@example.com']);
+
+    $form->validate(Request::create('/', 'POST', ['to' => 'john@example.com']));
+})->throws(ValidationException::class, 'Only Jane.');
+
+it('keeps rule objects out of the schema', function () {
+    $rule = new class implements ValidationRule
+    {
+        public string $secret = 'hidden';
+
+        public function validate(string $attribute, mixed $value, Closure $fail): void {}
+    };
+
+    expect(Text::make('to')->rules('required', $rule)->toSchema()['rules'])->toBe(['required']);
 });

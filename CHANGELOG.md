@@ -2,8 +2,12 @@
 
 All notable changes to `laravel-form-builder` will be documented in this file.
 
-## 1.7.0 - 2026-10-13
+## 1.7.1 - 2026-10-14
+* `rules()` accepts rule objects next to strings and arrays, so `Text::make('to')->rules('required', new SomeRule)`
+  no longer throws a `TypeError`.
+* The form schema only sends string rules to the browser; rule objects stay on the server.
 
+## 1.7.0 - 2026-10-13
 * Add a `Tags` field (`TranquilTools\FormBuilder\Fields\Tags`, type `tags`) whose value is a list of strings. It is
   `nullable|array` unless `->required()`, and every entry gets a `string` rule (`<name>.*`). `->emails()` adds
   `email:rfc` per entry, `->suggestions(string $url)` lets the renderer fetch `GET {url}?q=` for `[{value, label}]`, and
@@ -30,7 +34,6 @@ All notable changes to `laravel-form-builder` will be documented in this file.
   "Unknown field type" notice for `tags`, shows no list of current files and ignores profiles.
 
 ## 1.6.0 - 2026-10-12
-
 * `Date` takes `->validateBounds()` to validate `->minDate()` and `->maxDate()` on the server with the new
   `Rules\DateBounds` rule ("The :attribute must be on or after :date." / "on or before", English and Dutch). The new
   `dates.validate_bounds` config key (default `false`) turns it on for every date field; `->validateBounds(false)` opts
@@ -52,7 +55,6 @@ All notable changes to `laravel-form-builder` will be documented in this file.
   ignores it.
 
 ## 1.5.1 - 2026-10-12
-
 * Fix a regression from 1.5.0: `AbstractForm` was marked `@phpstan-consistent-constructor`, so PHPStan reported
   `parameter.notOptional` on every form in an application whose constructor takes required arguments, although
   `make()`, `rules()` and `attributes()` forward those arguments as before. The marker is gone and the package ignores
@@ -61,7 +63,6 @@ All notable changes to `laravel-form-builder` will be documented in this file.
   cannot come back unnoticed.
 
 ## 1.5.0 - 2026-10-12
-
 * `Date` takes `->disabledWeekdays([0, 6])` (0 = Sunday … 6 = Saturday) and `->disabledDates([...])` with `Y-m-d`
   strings, date objects and `['from' => ..., 'to' => ...]` ranges (either end may be left out). The schema carries
   them as `disabledWeekdays` and `disabledDates`, and the field adds the new `Rules\AvailableDate` rule, so the server
@@ -90,7 +91,6 @@ All notable changes to `laravel-form-builder` will be documented in this file.
   them and keeps working, while the server-side rules and messages work with any renderer.
 
 ## 1.4.0 - 2026-10-11
-
 * Add a `Money` field (type `money`) for an amount stored as whole minor units (cents). `->currency('EUR')` (default
   from the new `money.currency` config key), `->locale()`, `->decimals()` (follows the currency: `JPY` 0, `KWD` 3,
   others 2), and `->minValue()`, `->maxValue()` and `->unsigned()` in major units that validate in minor units. It
@@ -115,7 +115,6 @@ All notable changes to `laravel-form-builder` will be documented in this file.
   its "Unknown field type" notice for `money` and `translatable` and ignores the other additions.
 
 ## 1.3.0 - 2026-10-11
-
 * `Date` and `DateTime` take `->timezone(?string)`: an IANA name, or `Date::BROWSER_TIMEZONE` for the user's own. A
   default for every field lives in the new `dates.timezone` config key (`null`, so nothing changes until set). A date
   field with a time then sends its timezone and the application timezone in the schema, and the renderer submits ISO
@@ -132,7 +131,6 @@ All notable changes to `laravel-form-builder` will be documented in this file.
   "Unknown field type" notice in place of a section and the fields inside it.
 
 ## 1.2.0 - 2026-10-02
-
 * Add a `Time` field (`TranquilTools\FormBuilder\Fields\Time`, type `time`) for a time of day as `HH:MM` (24h). It
   validates with `date_format:H:i` and is `nullable` unless `->required()`.
 * `->step(int $minutes)` sets the interval of the suggested times (default 15, kept between 1 and 720). `->min('08:00')`
@@ -142,7 +140,6 @@ All notable changes to `laravel-form-builder` will be documented in this file.
   renderer shows its "Unknown field type" notice for it and keeps rendering every other field.
 
 ## 1.1.0 - 2026-10-01
-
 * `Button`, `Submit` and `DeleteButton` accept an `HtmlString` as label, for an icon or markup on the button. The schema
   carries it as `labelHtml`; `label` keeps the plain text of it (or the default label when the HTML has no text), so a
   confirm dialog or a renderer without HTML support still has something to show.
@@ -151,7 +148,6 @@ All notable changes to `laravel-form-builder` will be documented in this file.
 * Code style: Pint now formats the whole package with the Laravel preset.
 
 ## 1.0.1 - 2026-08-14
-
 * Add a `theme` config block — `wrapper`, `label`, `help` and `error` — carried in the schema, so any renderer inherits
   the same classes. A key left `null` or empty keeps the renderer's own default rather than blanking it.
 * Add `->theme([...])` on every field, overriding the form-wide theme for that field only. Repeated calls merge.
