@@ -161,7 +161,7 @@ abstract class BaseField implements JsonSerializable
         return $this;
     }
 
-    public function rules(array|string ...$rules): static
+    public function rules(array|string|object ...$rules): static
     {
         $this->rules = collect($rules)
             ->map(function ($item) {
@@ -224,7 +224,7 @@ abstract class BaseField implements JsonSerializable
             'default' => $this->default,
             'label' => $this->label,
             'name' => $this->getName(),
-            'rules' => $this->getRules(),
+            'rules' => array_values(array_filter($this->getRules(), 'is_string')),
             'type' => $this->type,
         ];
 
