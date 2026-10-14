@@ -3,6 +3,7 @@
 All notable changes to `laravel-form-builder` will be documented in this file.
 
 ## 1.7.1 - 2026-10-14
+
 * `rules()` accepts rule objects next to strings and arrays, so `Text::make('to')->rules('required', new SomeRule)`
   no longer throws a `TypeError`.
 * The form schema only sends string rules to the browser; rule objects stay on the server.
