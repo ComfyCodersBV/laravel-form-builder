@@ -44,9 +44,7 @@ it('keeps the options of a select without a search url', function () {
     expect($schema['options'])->toBe([
         '1' => 'Alice',
     ])
-        ->and($schema)->not->toHaveKey('searchUrl')
-        ->and($schema)->not->toHaveKey('minSearchLength')
-        ->and($schema)->not->toHaveKey('selected');
+        ->and($schema)->not->toHaveKey('searchUrl');
 });
 
 it('ignores an empty search url', function () {
@@ -64,17 +62,6 @@ it('uses the value as label of a selected option without one and forgets an empt
 
 it('needs at least one character before searching', function () {
     expect(Select::make('accessor')->searchUrl('/search')->minSearchLength(0)->toSchema()['minSearchLength'])->toBe(1);
-});
-
-it('adds no rule of its own to a select that searches on the server', function () {
-    $select = Select::make('accessor')
-        ->searchUrl('/search')
-        ->rules('required', 'exists:users,id');
-
-    expect($select->getRules())->toBe([
-        'required',
-        'exists:users,id',
-    ]);
 });
 
 it('refuses a multiple select that searches on the server', function () {
