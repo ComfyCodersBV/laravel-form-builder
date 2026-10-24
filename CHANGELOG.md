@@ -2,6 +2,16 @@
 
 All notable changes to `laravel-form-builder` will be documented in this file.
 
+## Unreleased
+* `Select::searchUrl(string $url)` lets the renderer search the options on the server: it fetches `GET {url}?q=`
+  while the user types and expects `[{value, label}]`. A select with a search url never sends its `options`, so the
+  full list stays on the server. `->minSearchLength(int)` (at least `1`) sets how many characters start a search.
+  `->selected($value, $label)` sends the stored value as `selected: {value, label}`, so an edit form shows its label
+  without a search; without a label the value is shown. The field adds no rule of its own: validate the value with an
+  `exists`-style rule. Combined with `->multiple()` it throws a `LogicException`.
+* `SCHEMA_VERSION` is now `1.9`. The new keys need laravel-vue-form-builder with `searchUrl` support; an older
+  renderer shows a select with a search url as an empty dropdown.
+
 ## 1.7.1 - 2026-10-14
 * `rules()` accepts rule objects next to strings and arrays, so `Text::make('to')->rules('required', new SomeRule)`
   no longer throws a `TypeError`.
