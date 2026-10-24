@@ -2,7 +2,7 @@
 
 All notable changes to `laravel-form-builder` will be documented in this file.
 
-## Unreleased
+## 1.8.0 - 2026-10-24
 * `Select::searchUrl(string $url)` lets the renderer search the options on the server: it fetches `GET {url}?q=`
   while the user types and expects `[{value, label}]`. A select with a search url never sends its `options`, so the
   full list stays on the server. `->minSearchLength(int)` (at least `1`) sets how many characters start a search.
