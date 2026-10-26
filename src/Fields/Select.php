@@ -51,8 +51,19 @@ class Select extends BaseField
         return $this;
     }
 
+    public function clearable(bool $clearable = true): static
+    {
+        $this->attributes['clearable'] = $clearable;
+
+        return $this;
+    }
+
     public function toSchema(): array
     {
+        if ($this->attributes['clearable'] ?? false) {
+            $this->attributes['clearLabel'] ??= trans('form-builder::fields.clear');
+        }
+
         $this->attributes['searchPlaceholder'] ??= trans('form-builder::fields.search-placeholder');
         $this->attributes['noResultsLabel'] ??= trans('form-builder::fields.no-results');
         $this->attributes['choosePlaceholder'] ??= trans('form-builder::fields.choose-option');

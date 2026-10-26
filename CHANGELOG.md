@@ -2,6 +2,12 @@
 
 All notable changes to `laravel-form-builder` will be documented in this file.
 
+## 1.9.0 - 2026-10-26
+* `Select::clearable(bool $clearable = true)` sends `clearable`, so the renderer shows a cross that empties a single
+  select again, without a `fieldOverrides` entry in Vue. A clearable select gets the translated `clearLabel`
+  ("Clear field" / "Veld leegmaken") unless one is set. Any laravel-vue-form-builder from 1.3.0 renders it; 1.13.2
+  puts the cross inside the field. The schema version stays `1.9`.
+
 ## 1.8.0 - 2026-10-24
 * `Select::searchUrl(string $url)` lets the renderer search the options on the server: it fetches `GET {url}?q=`
   while the user types and expects `[{value, label}]`. A select with a search url never sends its `options`, so the
