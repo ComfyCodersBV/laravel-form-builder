@@ -27,7 +27,7 @@ class FormConfig implements JsonSerializable
      * Renderers compare their supported version against this and refuse to render
      * silently wrong output.
      */
-    public const SCHEMA_VERSION = '1.9';
+    public const SCHEMA_VERSION = '1.10';
 
     protected ?AbstractForm $configurator = null;
 
@@ -51,6 +51,8 @@ class FormConfig implements JsonSerializable
     protected bool $resetOnSuccess = false;
 
     protected bool $submitOnChange = false;
+
+    protected bool $validateSteps = false;
 
     protected ?bool $fillFromQuery = null;
 
@@ -134,6 +136,13 @@ class FormConfig implements JsonSerializable
     public function submitOnChange(bool $submit = true): static
     {
         $this->submitOnChange = $submit;
+
+        return $this;
+    }
+
+    public function validateSteps(bool $validate = true): static
+    {
+        $this->validateSteps = $validate;
 
         return $this;
     }
@@ -235,6 +244,7 @@ class FormConfig implements JsonSerializable
             'locale' => $this->getLocale(),
             'resetOnSuccess' => $this->resetOnSuccess,
             'submitOnChange' => $this->submitOnChange,
+            'validateSteps' => $this->validateSteps,
         ];
 
         if (is_null($this->columns)) {

@@ -22,7 +22,7 @@ version stream, no duplication.
 
 |                           |                                                                                            |
 |---------------------------|--------------------------------------------------------------------------------------------|
-| `src/`                    | `AbstractForm`, `FormConfig`, every field type, validation rules, the `make:form` commands |
+| `src/`                    | `AbstractForm`, `FormConfig`, every field type (also `Step` for multi-step forms), validation rules, the `make:form` commands |
 | `config/form-builder.php` | WYSIWYG defaults, reCAPTCHA and key-value settings                                         |
 | `resources/lang/`         | translations used by PHP-side field labels                                                 |
 | `stubs/`                  | templates for the generator commands                                                       |

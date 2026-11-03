@@ -2,6 +2,15 @@
 
 All notable changes to `laravel-form-builder` will be documented in this file.
 
+## 1.10.0 - 2026-11-03
+* Add a `Step` field (`TranquilTools\FormBuilder\Fields\Step`, type `step`), a `Section` that a renderer shows as one
+  step of a multi-step form. Its fields' rules and attributes count for the form like those of a section.
+* `FormConfig::validateSteps(bool $validate = true)` sends `validateSteps`, so the renderer validates each step on the
+  server with a Precognition request before it moves on. The route needs the `HandlePrecognitiveRequests` middleware
+  and the action a form request.
+* `SCHEMA_VERSION` is now `1.10`. Steps need laravel-vue-form-builder 1.14; an older renderer shows a `step` as an
+  unknown field type.
+
 ## 1.9.0 - 2026-10-26
 * `Select::clearable(bool $clearable = true)` sends `clearable`, so the renderer shows a cross that empties a single
   select again, without a `fieldOverrides` entry in Vue. A clearable select gets the translated `clearLabel`
