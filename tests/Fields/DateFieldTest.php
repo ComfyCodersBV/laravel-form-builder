@@ -233,3 +233,29 @@ it('says which bound a date crossed', function (string $locale, string $value, s
     ['en', '2026-11-01', 'The arrival on must be on or before 2026-10-31.'],
     ['nl', '2026-09-30', 'Arrival on moet op of na 2026-10-01 liggen.'],
 ]);
+
+it('sends the touch picker options only when set', function () {
+    $schema = DateTime::make('starts_at')
+        ->touchPicker()
+        ->minuteStep(15)
+        ->hours(7, 23)
+        ->toSchema();
+
+    expect($schema['touch'])->toBeTrue()
+        ->and($schema['minuteStep'])->toBe(15)
+        ->and($schema['hourFrom'])->toBe(7)
+        ->and($schema['hourTo'])->toBe(23)
+        ->and(DateTime::make('starts_at')->toSchema())->not->toHaveKeys(['touch', 'minuteStep', 'hourFrom', 'hourTo'])
+        ->and(DateTime::make('starts_at')->touchPicker()->touchPicker(false)->toSchema())->not->toHaveKey('touch');
+});
+
+it('keeps the touch picker hours and minute step within a day', function () {
+    $schema = DateTime::make('starts_at')
+        ->minuteStep(90)
+        ->hours(20, 30)
+        ->toSchema();
+
+    expect($schema['minuteStep'])->toBe(60)
+        ->and($schema['hourFrom'])->toBe(20)
+        ->and($schema['hourTo'])->toBe(23);
+});

@@ -8,6 +8,8 @@ All notable changes to `laravel-form-builder` will be documented in this file.
 * `FormConfig::validateSteps(bool $validate = true)` sends `validateSteps`, so the renderer validates each step on the
   server with a Precognition request before it moves on. The route needs the `HandlePrecognitiveRequests` middleware
   and the action a form request.
+* `Date::touchPicker(bool $touch = true)` sends `touch` for a large, phone-friendly picker with separate date and time
+  buttons. `->minuteStep(int)` (1 to 60) and `->hours(int $from, int $to)` (0 to 23) set the minute and hour buttons.
 * `SCHEMA_VERSION` is now `1.10`. Steps need laravel-vue-form-builder 1.14; an older renderer shows a `step` as an
   unknown field type.
 

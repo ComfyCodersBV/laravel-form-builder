@@ -46,6 +46,34 @@ class Date extends BaseField
         return $this;
     }
 
+    public function touchPicker(bool $touch = true): static
+    {
+        if ($touch) {
+            $this->attributes['touch'] = true;
+        } else {
+            unset($this->attributes['touch']);
+        }
+
+        return $this;
+    }
+
+    public function minuteStep(int $minutes): static
+    {
+        $this->attributes['minuteStep'] = max(1, min($minutes, 60));
+
+        return $this;
+    }
+
+    public function hours(int $from, int $to): static
+    {
+        $from = max(0, min($from, 23));
+
+        $this->attributes['hourFrom'] = $from;
+        $this->attributes['hourTo'] = max($from, min($to, 23));
+
+        return $this;
+    }
+
     public function minDate(string $date): static
     {
         $this->attributes['minDate'] = $date;
