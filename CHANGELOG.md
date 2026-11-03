@@ -10,6 +10,7 @@ All notable changes to `laravel-form-builder` will be documented in this file.
   and the action a form request.
 * `Date::touchPicker(bool $touch = true)` sends `touch` for a large, phone-friendly picker with separate date and time
   buttons. `->minuteStep(int)` (1 to 60) and `->hours(int $from, int $to)` (0 to 23) set the minute and hour buttons.
+  A touch picker sends `clearable` (true unless the field is `required`). `Date::clearable()` overrides it.
 * `SCHEMA_VERSION` is now `1.10`. Steps need laravel-vue-form-builder 1.14; an older renderer shows a `step` as an
   unknown field type.
 

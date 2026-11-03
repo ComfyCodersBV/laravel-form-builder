@@ -57,6 +57,13 @@ class Date extends BaseField
         return $this;
     }
 
+    public function clearable(bool $clearable = true): static
+    {
+        $this->attributes['clearable'] = $clearable;
+
+        return $this;
+    }
+
     public function minuteStep(int $minutes): static
     {
         $this->attributes['minuteStep'] = max(1, min($minutes, 60));
@@ -218,6 +225,10 @@ class Date extends BaseField
 
     public function toSchema(): array
     {
+        if ($this->attributes['touch'] ?? false) {
+            $this->attributes['clearable'] ??= ! in_array('required', $this->getRules(), true);
+        }
+
         $schema = array_merge(parent::toSchema(), array_filter([
             'disabledWeekdays' => $this->disabledWeekdays,
             'disabledDates' => $this->disabledDates,

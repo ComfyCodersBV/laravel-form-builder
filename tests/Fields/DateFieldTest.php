@@ -259,3 +259,10 @@ it('keeps the touch picker hours and minute step within a day', function () {
         ->and($schema['hourFrom'])->toBe(20)
         ->and($schema['hourTo'])->toBe(23);
 });
+
+it('makes a touch picker clearable unless the field is required', function () {
+    expect(DateTime::make('expires_at')->touchPicker()->rules(['nullable'])->toSchema()['clearable'])->toBeTrue()
+        ->and(DateTime::make('starts_at')->touchPicker()->rules(['required'])->toSchema()['clearable'])->toBeFalse()
+        ->and(DateTime::make('starts_at')->touchPicker()->rules(['required'])->clearable()->toSchema()['clearable'])->toBeTrue()
+        ->and(DateTime::make('starts_at')->toSchema())->not->toHaveKey('clearable');
+});
