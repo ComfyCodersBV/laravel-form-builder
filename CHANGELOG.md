@@ -2,6 +2,12 @@
 
 All notable changes to `laravel-form-builder` will be documented in this file.
 
+## 1.11.0 - 2026-11-03
+* `Radio::tiles(bool $tiles = true)` sends `tiles`, so the renderer shows each option as a large selectable card with
+  its `description` as a second line, instead of a small radio button. A group built from separate radios keeps it.
+  Needs laravel-vue-form-builder 1.16; an older renderer shows plain radios.
+* `SCHEMA_VERSION` is now `1.11`.
+
 ## 1.10.0 - 2026-11-03
 * Add a `Step` field (`TranquilTools\FormBuilder\Fields\Step`, type `step`), a `Section` that a renderer shows as one
   step of a multi-step form. Its fields' rules and attributes count for the form like those of a section.

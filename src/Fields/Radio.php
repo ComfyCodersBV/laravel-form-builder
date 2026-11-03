@@ -41,6 +41,13 @@ class Radio extends BaseField
         return $this;
     }
 
+    public function tiles(bool $tiles = true): static
+    {
+        $this->attributes['tiles'] = $tiles;
+
+        return $this;
+    }
+
     public function link(string $href, string $label, ?string $target = null): static
     {
         $this->attributes['href'] = $href;
@@ -196,6 +203,22 @@ class Radio extends BaseField
         return self::safeLink($normalized);
     }
 
+    /**
+     * @param  array<string, mixed>  $group
+     * @param  array<string, mixed>  $schema
+     * @return array<string, mixed>
+     */
+    private static function withTiles(array $group, array $schema): array
+    {
+        if (($schema['tiles'] ?? false) !== true) {
+            return $group;
+        }
+
+        $group['tiles'] = true;
+
+        return $group;
+    }
+
     public static function normalize(array $schemas): array
     {
         $groups = [];
@@ -228,6 +251,7 @@ class Radio extends BaseField
                 $g = &$groups[$name]['group'];
                 $groups[$name]['firstIndex'] = min($groups[$name]['firstIndex'], $i);
                 $g['inline'] = $g['inline'] || (bool) ($schema['inline'] ?? false);
+                $g = self::withTiles($g, $schema);
                 $g['options'][] = self::safeLink(array_filter([
                     'value' => $schema['value'],
                     'label' => $schema['label'] ?? (string) $schema['value'],
@@ -256,12 +280,14 @@ class Radio extends BaseField
                             'options' => $normalizeOptions($schema['options'] ?? []),
                         ],
                     ];
+                    $groups[$name]['group'] = self::withTiles($groups[$name]['group'], $schema);
                 } else {
                     $g = &$groups[$name]['group'];
                     $groups[$name]['firstIndex'] = min($groups[$name]['firstIndex'], $i);
                     $g['label'] = $g['label'] ?? ($schema['label'] ?? null);
                     $g['inline'] = $g['inline'] || (bool) ($schema['inline'] ?? false);
                     $g['options'] = array_merge($g['options'], $normalizeOptions($schema['options'] ?? []));
+                    $g = self::withTiles($g, $schema);
                 }
                 $skipIndex[$i] = true;
             }
