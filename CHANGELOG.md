@@ -2,6 +2,13 @@
 
 All notable changes to `laravel-form-builder` will be documented in this file.
 
+## 1.12.0 - 2026-11-06
+* `->attributes()` throws an `InvalidArgumentException` for keys starting with `@`, `:`, `v-on:` or `v-bind:`, such as
+  `['@click' => 'preview()']`. The schema is JSON, so such a key reached the browser as a plain HTML attribute and
+  broke the page. The message points to `fieldOverrides` in Vue, for example
+  `:field-overrides="{ preview: { onClick: () => preview() } }"`, which laravel-vue-form-builder 1.17 puts on the
+  button or input itself.
+
 ## 1.11.1 - 2026-11-06
 * `fill()` now fills dot-notated fields such as `Select::make('database_credentials.driver')` from nested data: an
   array-cast JSON column on a model or a nested array. The schema `defaults` carry the flat key
