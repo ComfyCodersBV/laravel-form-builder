@@ -2,6 +2,13 @@
 
 All notable changes to `laravel-form-builder` will be documented in this file.
 
+## 1.11.1 - 2026-11-06
+* `fill()` now fills dot-notated fields such as `Select::make('database_credentials.driver')` from nested data: an
+  array-cast JSON column on a model or a nested array. The schema `defaults` carry the flat key
+  (`'database_credentials.driver' => 'mysql'`) next to the nested value, so the renderer shows the stored value when a
+  form is opened to edit. A literal dotted key in the data wins, a missing nested value adds nothing, hidden model
+  attributes stay out, and on a GET form the query string still wins. Fields inside a `Section` or `Step` count too.
+
 ## 1.11.0 - 2026-11-03
 * `Radio::tiles(bool $tiles = true)` sends `tiles`, so the renderer shows each option as a large selectable card with
   its `description` as a second line, instead of a small radio button. A group built from separate radios keeps it.

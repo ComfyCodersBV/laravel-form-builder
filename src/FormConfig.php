@@ -263,9 +263,51 @@ class FormConfig implements JsonSerializable
     protected function defaults(): Model|array
     {
         $data = $this->getData();
+        $array = $data instanceof Model ? $data->toArray() : $data;
 
-        if (! $this->fillsFromQuery()) {
+        $values = [
+            ...$this->nestedValues($array),
+            ...$this->queryValues(),
+        ];
+
+        if ($values === []) {
             return $data;
+        }
+
+        return [
+            ...$array,
+            ...$values,
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    protected function nestedValues(array $data): array
+    {
+        $values = [];
+
+        foreach ($this->valueFields($this->getFields()) as $field) {
+            $name = $field->getName();
+
+            if (is_null($name) || ! str_contains($name, '.') || array_key_exists($name, $data) || ! Arr::has($data, $name)) {
+                continue;
+            }
+
+            $values[$name] = Arr::get($data, $name);
+        }
+
+        return $values;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function queryValues(): array
+    {
+        if (! $this->fillsFromQuery()) {
+            return [];
         }
 
         $query = request()->query();
@@ -280,14 +322,7 @@ class FormConfig implements JsonSerializable
             }
         }
 
-        if ($values === []) {
-            return $data;
-        }
-
-        return [
-            ...($data instanceof Model ? $data->toArray() : $data),
-            ...$values,
-        ];
+        return $values;
     }
 
     protected function fillsFromQuery(): bool
