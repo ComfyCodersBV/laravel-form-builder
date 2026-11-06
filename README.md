@@ -35,6 +35,16 @@ The boundary rule: **what produces schema belongs here, what reads schema belong
 it supports and refuses to render rather than silently dropping a field type it does not recognise. Bump the major for
 changes that would misrender in an older renderer, the minor for additions that can be ignored safely.
 
+## Event listeners come from Vue
+
+The schema is JSON, so a form class cannot carry a Vue listener. `->attributes()` throws an `InvalidArgumentException`
+for keys starting with `@`, `:`, `v-on:` or `v-bind:`, instead of letting the renderer break the page. Attach handlers
+in the renderer, in Vue through `fieldOverrides`:
+
+```vue
+<Form :schema="form" :field-overrides="{ preview: { onClick: () => (previewOpen = true) } }" />
+```
+
 ## Namespace
 
 The namespace is `TranquilTools\FormBuilder\` and did **not** change when this package was extracted from the Vue

@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace TranquilTools\FormBuilder\Fields;
 
 use Illuminate\Support\HtmlString;
+use Illuminate\Support\Str;
 use Illuminate\Support\Traits\Macroable;
+use InvalidArgumentException;
 use JsonSerializable;
 
 /**
@@ -34,9 +36,31 @@ abstract class BaseField implements JsonSerializable
 
     public function attributes(array $attributes): static
     {
+        foreach (array_keys($attributes) as $key) {
+            $this->guardAgainstVueDirective((string) $key);
+        }
+
         $this->attributes = array_merge($this->attributes, $attributes);
 
         return $this;
+    }
+
+    protected function guardAgainstVueDirective(string $key): void
+    {
+        if (! Str::startsWith($key, ['@', ':', 'v-on:', 'v-bind:'])) {
+            return;
+        }
+
+        $name = $this->getName() ?? 'field_name';
+
+        throw new InvalidArgumentException(sprintf(
+            'The attribute "%s" on field "%s" is a Vue directive. Event listeners and bindings cannot come from PHP: '
+            .'the schema is JSON and the renderer would set it as a plain HTML attribute. Attach them in Vue through '
+            .'fieldOverrides instead, for example :field-overrides="{ \'%s\': { onClick: () => preview() } }".',
+            $key,
+            $name,
+            $name,
+        ));
     }
 
     public function class(string $className): static

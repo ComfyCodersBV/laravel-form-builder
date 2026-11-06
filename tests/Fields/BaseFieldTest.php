@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Illuminate\Support\HtmlString;
+use TranquilTools\FormBuilder\Fields\Button;
 use TranquilTools\FormBuilder\Fields\Hidden;
 use TranquilTools\FormBuilder\Fields\Text;
 
@@ -82,4 +83,23 @@ it('stores a display condition via if()', function () {
 
 it('renders the concrete field type', function () {
     expect(Hidden::make('token')->toSchema()['type'])->toBe('hidden');
+});
+
+it('refuses Vue event listeners and bindings as attributes', function (string $key) {
+    Text::make('x')->attributes([$key => 'preview()']);
+})->with([
+    '@click',
+    'v-on:click',
+    'v-bind:title',
+    ':title',
+])->throws(InvalidArgumentException::class, 'fieldOverrides');
+
+it('names the refused attribute and shows the Vue way', function () {
+    expect(fn () => Button::make('preview')->attributes(['@click' => 'preview()']))
+        ->toThrow(function (InvalidArgumentException $e) {
+            expect($e->getMessage())
+                ->toContain('"@click"')
+                ->toContain('preview')
+                ->toContain('onClick');
+        });
 });

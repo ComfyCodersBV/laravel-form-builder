@@ -2,6 +2,13 @@
 
 All notable changes to `laravel-form-builder` will be documented in this file.
 
+## 1.12.0 - 2026-11-06
+* `->attributes()` throws an `InvalidArgumentException` for keys starting with `@`, `:`, `v-on:` or `v-bind:`, such as
+  `['@click' => 'preview()']`. The schema is JSON, so such a key reached the browser as a plain HTML attribute and
+  broke the page. The message points to `fieldOverrides` in Vue, for example
+  `:field-overrides="{ preview: { onClick: () => preview() } }"`, which laravel-vue-form-builder 1.17 puts on the
+  button or input itself.
+
 ## 1.11.0 - 2026-11-03
 * `Radio::tiles(bool $tiles = true)` sends `tiles`, so the renderer shows each option as a large selectable card with
   its `description` as a second line, instead of a small radio button. A group built from separate radios keeps it.
