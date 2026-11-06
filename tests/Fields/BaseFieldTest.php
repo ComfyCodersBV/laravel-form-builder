@@ -52,6 +52,22 @@ it('sets the className attribute via class()', function () {
     expect(Text::make('x')->class('w-full')->toSchema()['className'])->toBe('w-full');
 });
 
+it('sets the wrapper class via wrapperClass(), the same key class() sets', function () {
+    expect(Text::make('x')->wrapperClass('col-span-2')->toSchema()['className'])->toBe('col-span-2')
+        ->and(Text::make('x')->class('a')->wrapperClass('b')->toSchema()['className'])->toBe('b');
+});
+
+it('sets the class of the element itself via inputClass()', function () {
+    $schema = Text::make('x')->class('col-span-2')->inputClass('font-mono')->toSchema();
+
+    expect($schema['inputClassName'])->toBe('font-mono')
+        ->and($schema['className'])->toBe('col-span-2');
+});
+
+it('leaves both class keys out until they are set', function () {
+    expect(Text::make('x')->toSchema())->not->toHaveKeys(['className', 'inputClassName']);
+});
+
 it('merges arbitrary attributes', function () {
     $schema = Text::make('x')->attributes(['data-test' => 'a', 'data-other' => 'b'])->toSchema();
 
