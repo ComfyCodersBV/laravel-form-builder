@@ -65,7 +65,19 @@ abstract class BaseField implements JsonSerializable
 
     public function class(string $className): static
     {
+        return $this->wrapperClass($className);
+    }
+
+    public function wrapperClass(string $className): static
+    {
         $this->attributes['className'] = $className;
+
+        return $this;
+    }
+
+    public function inputClass(string $className): static
+    {
+        $this->attributes['inputClassName'] = $className;
 
         return $this;
     }

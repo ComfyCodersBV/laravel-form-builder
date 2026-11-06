@@ -45,6 +45,12 @@ in the renderer, in Vue through `fieldOverrides`:
 <Form :schema="form" :field-overrides="{ preview: { onClick: () => (previewOpen = true) } }" />
 ```
 
+## Classes on a field
+
+`->wrapperClass()` replaces the classes of the wrapper around a field's label, control, help and error. `->class()` is
+its older name and keeps working. `->inputClass()` adds classes to the control itself (input, select trigger,
+checkbox, button). In the schema they are `className` and `inputClassName`.
+
 ## Namespace
 
 The namespace is `TranquilTools\FormBuilder\` and did **not** change when this package was extracted from the Vue

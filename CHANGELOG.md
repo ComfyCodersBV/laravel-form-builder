@@ -2,6 +2,14 @@
 
 All notable changes to `laravel-form-builder` will be documented in this file.
 
+## 1.13.0 - 2026-11-06
+* `->wrapperClass(string)` sets the classes of the field's wrapper (label, control, help and error) and replaces the
+  theme's `wrapper`, as `->class()` always did. `->class()` stays as its older name and works exactly as before; both
+  still send `className`, so an older renderer keeps showing the wrapper class.
+* `->inputClass(string)` sends `inputClassName`, classes for the element itself: the input, textarea, select or date
+  trigger, checkbox, switch, radio or button. Needs laravel-vue-form-builder 1.18; an older renderer ignores it.
+* `SCHEMA_VERSION` is now `1.12`.
+
 ## 1.12.0 - 2026-11-06
 * `->attributes()` throws an `InvalidArgumentException` for keys starting with `@`, `:`, `v-on:` or `v-bind:`, such as
   `['@click' => 'preview()']`. The schema is JSON, so such a key reached the browser as a plain HTML attribute and
