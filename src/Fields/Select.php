@@ -9,6 +9,7 @@ use Illuminate\Support\Collection;
 use LogicException;
 use TranquilTools\FormBuilder\Fields\Traits\HasMultiple;
 use TranquilTools\FormBuilder\Fields\Traits\HasOptions;
+use TranquilTools\FormBuilder\Rules\DependentOption;
 
 class Select extends BaseField
 {
@@ -20,6 +21,11 @@ class Select extends BaseField
     /** @var array<int|string, Collection|array<int|string, mixed>>|null */
     protected ?array $optionGroups = null;
 
+    protected ?string $dependsOn = null;
+
+    /** @var array<int|string, Collection|array<int|string, mixed>> */
+    protected array $optionsPerValue = [];
+
     /**
      * @param  array<int|string, Collection|array<int|string, mixed>>  $groups
      */
@@ -28,6 +34,31 @@ class Select extends BaseField
         $this->optionGroups = $groups;
 
         return $this;
+    }
+
+    /**
+     * @param  array<int|string, Collection|array<int|string, mixed>>  $optionsPerValue
+     */
+    public function optionsFor(string $field, array $optionsPerValue): static
+    {
+        $this->dependsOn = $field;
+        $this->optionsPerValue = $optionsPerValue;
+
+        return $this;
+    }
+
+    public function getRules(): array
+    {
+        $name = $this->getName();
+
+        if (is_null($this->dependsOn) || is_null($name) || $name === '') {
+            return parent::getRules();
+        }
+
+        return [
+            ...parent::getRules(),
+            new DependentOption($name, $this->dependsOn, $this->allowedValuesPerOption()),
+        ];
     }
 
     public function searchUrl(?string $url): static
@@ -93,6 +124,10 @@ class Select extends BaseField
             throw new LogicException("Select [{$this->getName()}] cannot search on the server and select multiple options.");
         }
 
+        if (! is_null($this->dependsOn)) {
+            throw new LogicException("Select [{$this->getName()}] cannot search on the server and depend on [{$this->dependsOn}].");
+        }
+
         unset($schema['options'], $schema['optionOrder']);
 
         return $schema;
@@ -104,6 +139,21 @@ class Select extends BaseField
      */
     protected function optionsSchema(array $schema): array
     {
+        if (! is_null($this->dependsOn)) {
+            unset($schema['options']);
+
+            return [
+                ...$schema,
+                'dependentOptions' => [
+                    'field' => $this->dependsOn,
+                    'options' => array_map(
+                        fn (Collection|array $options): array => $this->optionRows($options),
+                        $this->optionsPerValue,
+                    ),
+                ],
+            ];
+        }
+
         if (! is_null($this->optionGroups)) {
             return [
                 ...$schema,
@@ -178,6 +228,23 @@ class Select extends BaseField
             $this->valueKey() => is_scalar($value) ? (string) $value : '',
             $this->labelKey() => is_scalar($option) ? (string) $option : '',
         ];
+    }
+
+    /**
+     * @return array<string, list<string>>
+     */
+    protected function allowedValuesPerOption(): array
+    {
+        $allowed = [];
+
+        foreach ($this->optionsPerValue as $controllingValue => $options) {
+            $allowed[(string) $controllingValue] = array_map(
+                fn (array $row): string => is_scalar($row[$this->valueKey()] ?? null) ? (string) $row[$this->valueKey()] : '',
+                $this->optionRows($options),
+            );
+        }
+
+        return $allowed;
     }
 
     protected function valueKey(): string

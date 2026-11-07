@@ -27,7 +27,7 @@ class FormConfig implements JsonSerializable
      * Renderers compare their supported version against this and refuse to render
      * silently wrong output.
      */
-    public const SCHEMA_VERSION = '1.12';
+    public const SCHEMA_VERSION = '1.13';
 
     protected ?AbstractForm $configurator = null;
 

@@ -14,6 +14,16 @@ All notable changes to `laravel-form-builder` will be documented in this file.
   becomes rows under the field's `optionValue` and `optionLabel` keys (`id` and `name` unless set), with string values.
   laravel-vue-form-builder 1.19 shows the groups under a heading; an older renderer shows one flat list. Any option
   row, also from `options()` or a `searchUrl` response, may carry a `group`.
+* `Select::optionsFor(string $field, array $optionsPerValue)` makes the options depend on another field, for example
+  `->optionsFor('direction', ['expense' => $expensePosts, 'income' => $incomePosts])`. The schema sends
+  `dependentOptions: {field, options}` with each list as rows (a map becomes rows as in `optionGroups()`), and no
+  `options`. The renderer shows the options of the current value of that field and clears a choice that is no longer
+  listed. Inside a `Repeater` the field is read from the same row. A boolean value of that field (a checkbox or toggle)
+  matches the keys `1` and `0`. The field gets a `DependentOption` rule
+  (`TranquilTools\FormBuilder\Rules\DependentOption`) that only accepts a value listed for the submitted value of that
+  field, also for a multiple select. Combined with `->searchUrl()` it throws a `LogicException`. Needs
+  laravel-vue-form-builder 1.19; an older renderer shows an empty select.
+* `SCHEMA_VERSION` is now `1.13`.
 
 ## 1.13.0 - 2026-11-06
 * `->wrapperClass(string)` sets the classes of the field's wrapper (label, control, help and error) and replaces the
