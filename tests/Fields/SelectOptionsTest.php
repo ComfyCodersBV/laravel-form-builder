@@ -159,3 +159,34 @@ it('reads a boolean value it depends on as 1 or 0', function () {
         ->and(fn () => $form->validate(Request::create('/', 'POST', ['member' => false, 'plan' => 'member'])))
         ->toThrow(ValidationException::class);
 });
+
+it('sends the key of the option code', function () {
+    expect(Select::make('post_id')->optionCode()->toSchema()['optionCode'])->toBe('code')
+        ->and(Select::make('post_id')->optionCode('number')->toSchema()['optionCode'])->toBe('number')
+        ->and(Select::make('post_id')->toSchema())->not->toHaveKey('optionCode');
+});
+
+it('keeps the code of plain, grouped and dependent option rows', function () {
+    $rows = [
+        ['id' => 8010, 'name' => 'Rent to individuals', 'code' => '8010'],
+        ['id' => 3, 'name' => 'Other income'],
+    ];
+
+    $plain = Select::make('post_id')->options($rows)->optionCode()->toSchema();
+    $grouped = Select::make('post_id')->optionGroups(['Income' => collect($rows)])->optionCode()->toSchema();
+    $dependent = Select::make('post_id')->optionsFor('direction', ['income' => $rows])->optionCode()->toSchema();
+
+    expect($plain['options'])->toBe($rows)
+        ->and($grouped['options'])->toBe([
+            ['id' => 8010, 'name' => 'Rent to individuals', 'code' => '8010', 'group' => 'Income'],
+            ['id' => 3, 'name' => 'Other income', 'group' => 'Income'],
+        ])
+        ->and($dependent['dependentOptions']['options']['income'])->toBe($rows);
+});
+
+it('sends the code of the selected value', function () {
+    expect(Select::make('post_id')->searchUrl('/search')->selected(8010, 'Rent', 8010)->toSchema()['selected'])
+        ->toBe(['value' => 8010, 'label' => 'Rent', 'code' => '8010'])
+        ->and(Select::make('post_id')->searchUrl('/search')->selected(8010, 'Rent', '')->toSchema()['selected'])
+        ->toBe(['value' => 8010, 'label' => 'Rent']);
+});

@@ -47,6 +47,19 @@ class Select extends BaseField
         return $this;
     }
 
+    public function optionCode(string $column = 'code'): static
+    {
+        if ($column === '') {
+            unset($this->attributes['optionCode']);
+
+            return $this;
+        }
+
+        $this->attributes['optionCode'] = $column;
+
+        return $this;
+    }
+
     public function getRules(): array
     {
         $name = $this->getName();
@@ -81,7 +94,7 @@ class Select extends BaseField
         return $this;
     }
 
-    public function selected(string|int|null $value, ?string $label = null): static
+    public function selected(string|int|null $value, ?string $label = null, string|int|null $code = null): static
     {
         if (is_null($value) || $value === '') {
             unset($this->attributes['selected']);
@@ -93,6 +106,10 @@ class Select extends BaseField
             'value' => $value,
             'label' => is_null($label) || $label === '' ? (string) $value : $label,
         ];
+
+        if (! is_null($code) && $code !== '') {
+            $this->attributes['selected']['code'] = (string) $code;
+        }
 
         return $this;
     }

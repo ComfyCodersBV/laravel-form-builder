@@ -2,6 +2,17 @@
 
 All notable changes to `laravel-form-builder` will be documented in this file.
 
+## 1.15.0 - 2026-11-07
+* `Select::optionCode(string $column = 'code')` shows a code column in front of each option label, for example
+  `8010   Rent to individuals`. Option rows given to `options()`, `optionGroups()` or `optionsFor()` carry the code under
+  that key; rows without one get an empty cell. The schema sends `optionCode` with the key; rows pass through
+  unchanged. Without `optionCode()` nothing changes, also for rows that happen to have a `code` key.
+  laravel-vue-form-builder 1.20 renders the column, searches on it and shows the code in the closed field; an older
+  renderer ignores it.
+* `Select::selected($value, $label, $code)` takes the code of the stored value of a `searchUrl` select as a third
+  argument and sends it as `selected.code`.
+* `SCHEMA_VERSION` is now `1.14`.
+
 ## 1.14.0 - 2026-11-07
 * `Files::fileRules(...)` validates every uploaded file: the rules become `<name>.*` next to the field's own rules,
   for example `->rules(['required', 'array', 'max:10'])->fileRules(['file', 'max:20480'])`. Errors arrive as
