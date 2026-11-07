@@ -9,6 +9,11 @@ All notable changes to `laravel-form-builder` will be documented in this file.
 * A `Select` with options given as a map (`[12 => 'Anna', 3 => 'Bram']`) also sends `optionOrder`, the keys as strings
   in the order given. A browser sorts numeric object keys, so the renderer showed such options sorted by id;
   laravel-vue-form-builder 1.19 follows `optionOrder`. `options` itself is unchanged.
+* `Select::optionGroups(['Costs' => [7 => 'Rent'], 'Income' => $rows])` groups the options. Each group is a map or a
+  list of rows, as `options()` takes. The schema sends one flat `options` list of rows, each carrying its `group`; a map
+  becomes rows under the field's `optionValue` and `optionLabel` keys (`id` and `name` unless set), with string values.
+  laravel-vue-form-builder 1.19 shows the groups under a heading; an older renderer shows one flat list. Any option
+  row, also from `options()` or a `searchUrl` response, may carry a `group`.
 
 ## 1.13.0 - 2026-11-06
 * `->wrapperClass(string)` sets the classes of the field's wrapper (label, control, help and error) and replaces the

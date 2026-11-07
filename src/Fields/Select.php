@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace TranquilTools\FormBuilder\Fields;
 
+use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Collection;
 use LogicException;
 use TranquilTools\FormBuilder\Fields\Traits\HasMultiple;
 use TranquilTools\FormBuilder\Fields\Traits\HasOptions;
@@ -14,6 +16,19 @@ class Select extends BaseField
     use HasOptions;
 
     protected string $type = 'select';
+
+    /** @var array<int|string, Collection|array<int|string, mixed>>|null */
+    protected ?array $optionGroups = null;
+
+    /**
+     * @param  array<int|string, Collection|array<int|string, mixed>>  $groups
+     */
+    public function optionGroups(array $groups): static
+    {
+        $this->optionGroups = $groups;
+
+        return $this;
+    }
 
     public function searchUrl(?string $url): static
     {
@@ -89,6 +104,13 @@ class Select extends BaseField
      */
     protected function optionsSchema(array $schema): array
     {
+        if (! is_null($this->optionGroups)) {
+            return [
+                ...$schema,
+                'options' => $this->groupedRows($this->optionGroups),
+            ];
+        }
+
         $options = $schema['options'] ?? null;
 
         if (! is_array($options) || array_is_list($options)) {
@@ -99,5 +121,72 @@ class Select extends BaseField
             ...$schema,
             'optionOrder' => array_map(fn (int|string $value): string => (string) $value, array_keys($options)),
         ];
+    }
+
+    /**
+     * @param  array<int|string, Collection|array<int|string, mixed>>  $groups
+     * @return list<array<string, mixed>>
+     */
+    protected function groupedRows(array $groups): array
+    {
+        $rows = [];
+
+        foreach ($groups as $group => $options) {
+            foreach ($this->optionRows($options) as $row) {
+                $rows[] = [
+                    ...$row,
+                    'group' => (string) $group,
+                ];
+            }
+        }
+
+        return $rows;
+    }
+
+    /**
+     * @param  Collection|array<int|string, mixed>  $options
+     * @return list<array<string, mixed>>
+     */
+    protected function optionRows(Collection|array $options): array
+    {
+        $options = $options instanceof Collection ? $options->all() : $options;
+        $rows = [];
+
+        foreach ($options as $value => $option) {
+            $rows[] = $this->optionRow($value, $option, array_is_list($options));
+        }
+
+        return $rows;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function optionRow(int|string $value, mixed $option, bool $fromList): array
+    {
+        if ($option instanceof Arrayable) {
+            return $option->toArray();
+        }
+
+        if (is_array($option)) {
+            return $option;
+        }
+
+        $value = $fromList ? $option : $value;
+
+        return [
+            $this->valueKey() => is_scalar($value) ? (string) $value : '',
+            $this->labelKey() => is_scalar($option) ? (string) $option : '',
+        ];
+    }
+
+    protected function valueKey(): string
+    {
+        return $this->attributes['optionValue'] ?? 'id';
+    }
+
+    protected function labelKey(): string
+    {
+        return $this->attributes['optionLabel'] ?? 'name';
     }
 }
