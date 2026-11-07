@@ -2,6 +2,11 @@
 
 All notable changes to `laravel-form-builder` will be documented in this file.
 
+## 1.14.0 - 2026-11-07
+* `Files::fileRules(...)` validates every uploaded file: the rules become `<name>.*` next to the field's own rules,
+  for example `->rules(['required', 'array', 'max:10'])->fileRules(['file', 'max:20480'])`. Errors arrive as
+  `<name>.0`, `<name>.1` and so on; laravel-vue-form-builder 1.19 shows them under the field.
+
 ## 1.13.0 - 2026-11-06
 * `->wrapperClass(string)` sets the classes of the field's wrapper (label, control, help and error) and replaces the
   theme's `wrapper`, as `->class()` always did. `->class()` stays as its older name and works exactly as before; both

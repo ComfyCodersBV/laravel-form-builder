@@ -11,6 +11,9 @@ class Files extends File
     /** @var list<array{key: string, name: string, size?: int, url?: string}>|null */
     protected ?array $currentFiles = null;
 
+    /** @var array<int, mixed> */
+    protected array $fileRules = [];
+
     public function __construct()
     {
         $this->multiple();
@@ -46,6 +49,45 @@ class Files extends File
         $this->attributes['currentFiles'] = $this->currentFiles;
 
         return $this;
+    }
+
+    /**
+     * @param  array<int, mixed>|string|object  ...$rules
+     */
+    public function fileRules(array|string|object ...$rules): static
+    {
+        $this->fileRules = collect($rules)
+            ->map(fn (mixed $rule): mixed => is_string($rule) ? explode('|', $rule) : $rule)
+            ->flatten()
+            ->all();
+
+        return $this;
+    }
+
+    /**
+     * @return array<int, mixed>
+     */
+    public function getFileRules(): array
+    {
+        return $this->fileRules;
+    }
+
+    /**
+     * @return array<string, array<int, mixed>>
+     */
+    public function nestedRules(): array
+    {
+        $rules = parent::nestedRules();
+        $name = $this->getName();
+
+        if ($this->fileRules === [] || is_null($name) || $name === '') {
+            return $rules;
+        }
+
+        return [
+            ...$rules,
+            "{$name}.*" => $this->fileRules,
+        ];
     }
 
     /**

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Validation\ValidationException;
 use TranquilTools\FormBuilder\Fields\File;
 use TranquilTools\FormBuilder\Fields\Files;
@@ -141,4 +142,43 @@ it('reads no removed keys for a single current file', function () {
     expect($field->removedKeys($request))->toBe([])
         ->and($field->removalRequested($request))->toBeTrue()
         ->and($field->nestedRules())->toBe(['remove_avatar' => ['nullable', 'boolean']]);
+});
+
+it('validates every uploaded file with the file rules', function () {
+    $field = Files::make('attachments')
+        ->rules(['required', 'array'])
+        ->fileRules(['file', 'max:10'], 'mimes:pdf');
+
+    $form = FormConfig::make([$field]);
+
+    expect($form->getRules())->toBe([
+        'attachments' => ['required', 'array'],
+        'attachments.*' => ['file', 'max:10', 'mimes:pdf'],
+    ])
+        ->and($field->toSchema()['rules'])->toBe(['required', 'array'])
+        ->and(Files::make('attachments')->nestedRules())->toBe([]);
+
+    $request = Request::create('/', 'POST', files: [
+        'attachments' => [
+            UploadedFile::fake()->create('report.pdf', 5, 'application/pdf'),
+            UploadedFile::fake()->create('photo.png', 50, 'image/png'),
+        ],
+    ]);
+
+    try {
+        $form->validate($request);
+        $this->fail('The second file should not pass.');
+    } catch (ValidationException $exception) {
+        expect(array_keys($exception->errors()))->toBe(['attachments.1']);
+    }
+});
+
+it('keeps the remove flag rules next to the file rules', function () {
+    $rules = Files::make('attachments')
+        ->current([['key' => 'a', 'name' => 'a.pdf']])
+        ->removable()
+        ->fileRules(['file'])
+        ->nestedRules();
+
+    expect(array_keys($rules))->toBe(['remove_attachments', 'remove_attachments.*', 'attachments.*']);
 });
