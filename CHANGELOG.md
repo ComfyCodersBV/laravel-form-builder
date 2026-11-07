@@ -6,6 +6,9 @@ All notable changes to `laravel-form-builder` will be documented in this file.
 * `Files::fileRules(...)` validates every uploaded file: the rules become `<name>.*` next to the field's own rules,
   for example `->rules(['required', 'array', 'max:10'])->fileRules(['file', 'max:20480'])`. Errors arrive as
   `<name>.0`, `<name>.1` and so on; laravel-vue-form-builder 1.19 shows them under the field.
+* A `Select` with options given as a map (`[12 => 'Anna', 3 => 'Bram']`) also sends `optionOrder`, the keys as strings
+  in the order given. A browser sorts numeric object keys, so the renderer showed such options sorted by id;
+  laravel-vue-form-builder 1.19 follows `optionOrder`. `options` itself is unchanged.
 
 ## 1.13.0 - 2026-11-06
 * `->wrapperClass(string)` sets the classes of the field's wrapper (label, control, help and error) and replaces the

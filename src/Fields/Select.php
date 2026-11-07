@@ -68,7 +68,7 @@ class Select extends BaseField
         $this->attributes['noResultsLabel'] ??= trans('form-builder::fields.no-results');
         $this->attributes['choosePlaceholder'] ??= trans('form-builder::fields.choose-option');
 
-        $schema = parent::toSchema();
+        $schema = $this->optionsSchema(parent::toSchema());
 
         if (! isset($schema['searchUrl'])) {
             return $schema;
@@ -78,8 +78,26 @@ class Select extends BaseField
             throw new LogicException("Select [{$this->getName()}] cannot search on the server and select multiple options.");
         }
 
-        unset($schema['options']);
+        unset($schema['options'], $schema['optionOrder']);
 
         return $schema;
+    }
+
+    /**
+     * @param  array<string, mixed>  $schema
+     * @return array<string, mixed>
+     */
+    protected function optionsSchema(array $schema): array
+    {
+        $options = $schema['options'] ?? null;
+
+        if (! is_array($options) || array_is_list($options)) {
+            return $schema;
+        }
+
+        return [
+            ...$schema,
+            'optionOrder' => array_map(fn (int|string $value): string => (string) $value, array_keys($options)),
+        ];
     }
 }
