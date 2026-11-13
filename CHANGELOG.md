@@ -15,6 +15,10 @@ All notable changes to `laravel-form-builder` will be documented in this file.
   `->help()` keeps sending HTML as before.
 * `FormConfig::stepParam('step')` sends `stepParam`, the query parameter a wizard keeps its current step in.
   laravel-vue-form-builder 1.21 writes the step there and reads it back on load.
+* The `UsesForm` trait gives a `FormRequest` its `rules()` and `attributes()` from one built form. Implement
+  `protected function form(): FormConfig` (for example `return BookingForm::make();`) and drop the two methods that
+  called `BookingForm::rules()` and `BookingForm::attributes()`. A request that adds rules overrides `rules()` and
+  starts from `$this->builtForm()->getRules()`.
 * `SCHEMA_VERSION` is now `1.15`.
 
 ## 1.15.0 - 2026-11-07

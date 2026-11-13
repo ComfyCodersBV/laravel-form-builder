@@ -23,7 +23,7 @@ version stream, no duplication.
 |                           |                                                                                            |
 |---------------------------|--------------------------------------------------------------------------------------------|
 | `src/`                    | `AbstractForm`, `FormConfig`, every field type (also `Step` for multi-step forms), validation rules, the `make:form` commands |
-| `config/form-builder.php` | WYSIWYG defaults, reCAPTCHA and key-value settings                                         |
+| `config/form-builder.php` | theme, required indicator, WYSIWYG defaults, reCAPTCHA and key-value settings              |
 | `resources/lang/`         | translations used by PHP-side field labels                                                 |
 | `stubs/`                  | templates for the generator commands                                                       |
 
@@ -50,6 +50,23 @@ in the renderer, in Vue through `fieldOverrides`:
 `->wrapperClass()` replaces the classes of the wrapper around a field's label, control, help and error. `->class()` is
 its older name and keeps working. `->inputClass()` adds classes to the control itself (input, select trigger,
 checkbox, button). In the schema they are `className` and `inputClassName`.
+
+## Form requests
+
+`TranquilTools\FormBuilder\Concerns\UsesForm` builds the form once and answers both `rules()` and `attributes()` of a
+`FormRequest` from it:
+
+```php
+class BookingRequest extends FormRequest
+{
+    use UsesForm;
+
+    protected function form(): FormConfig
+    {
+        return BookingForm::make();
+    }
+}
+```
 
 ## Namespace
 
