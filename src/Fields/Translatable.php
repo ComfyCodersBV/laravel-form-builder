@@ -279,6 +279,11 @@ class Translatable extends BaseField
         ]);
     }
 
+    protected function requiredByRules(): bool
+    {
+        return $this->getRequiredLocales() !== [];
+    }
+
     private function innerRequired(): bool
     {
         return in_array('required', $this->getField()->getRules(), true);

@@ -7,6 +7,7 @@ namespace TranquilTools\FormBuilder\Fields;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 use Illuminate\Support\Traits\Macroable;
+use Illuminate\Validation\Rules\RequiredIf;
 use InvalidArgumentException;
 use JsonSerializable;
 
@@ -33,6 +34,8 @@ abstract class BaseField implements JsonSerializable
     protected array $attributes = [];
 
     protected mixed $default = null;
+
+    protected ?bool $markRequired = null;
 
     public function attributes(array $attributes): static
     {
@@ -124,6 +127,41 @@ abstract class BaseField implements JsonSerializable
         $this->attributes['help'] = $text instanceof HtmlString ? $text->toHtml() : e($text);
 
         return $this;
+    }
+
+    public function markRequired(?bool $mark = true): static
+    {
+        $this->markRequired = $mark;
+
+        return $this;
+    }
+
+    public function marksRequired(): bool
+    {
+        if (! is_null($this->markRequired)) {
+            return $this->markRequired;
+        }
+
+        if (! config('form-builder.required_indicator', true)) {
+            return false;
+        }
+
+        return $this->requiredByRules();
+    }
+
+    protected function requiredByRules(): bool
+    {
+        foreach ($this->getRules() as $rule) {
+            if ($rule === 'required') {
+                return true;
+            }
+
+            if ($rule instanceof RequiredIf && $rule->condition === true) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function label(string $label): static
@@ -263,6 +301,10 @@ abstract class BaseField implements JsonSerializable
             'rules' => array_values(array_filter($this->getRules(), 'is_string')),
             'type' => $this->type,
         ];
+
+        if ($this->marksRequired()) {
+            $schema['markRequired'] = true;
+        }
 
         return array_merge($schema, $this->attributes);
     }

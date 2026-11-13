@@ -20,6 +20,7 @@ return [
     |   'label'   => 'block text-sm font-medium text-neutral-800 dark:text-neutral-200'
     |   'help'    => 'mt-1 text-xs text-neutral-500 dark:text-neutral-400'
     |   'error'   => 'text-sm text-red-600'
+    |   'required' => 'ml-0.5 text-red-600'
     |
     | Override a single field instead with ->theme(['label' => '...']).
     |
@@ -29,7 +30,19 @@ return [
         'label' => null,
         'help' => null,
         'error' => null,
+        'required' => null,
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Required indicator
+    |--------------------------------------------------------------------------
+    |
+    | Mark the label of every field whose rules contain `required` with an
+    | asterisk. A field overrides this with ->markRequired(true|false).
+    |
+    */
+    'required_indicator' => true,
 
     'dates' => [
         'timezone' => null,

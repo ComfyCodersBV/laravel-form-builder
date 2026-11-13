@@ -2,6 +2,16 @@
 
 All notable changes to `laravel-form-builder` will be documented in this file.
 
+## 1.16.0 - 2026-11-13
+* Every field whose rules contain `required` sends `markRequired: true`, so a renderer can put an asterisk after its
+  label. A `Rule::requiredIf()` counts only when its condition is a plain `true`; a closure, `required_if`,
+  `required_with` and the like are not marked. Radio and checkbox groups are marked like any field, sections and steps
+  are not, a `Translatable` is marked when one of its locales is required. `->markRequired()` marks a field anyway,
+  `->markRequired(false)` never. `config('form-builder.required_indicator')` (default `true`) switches the derived
+  marking off app-wide; `->markRequired()` still applies then. laravel-vue-form-builder 1.21 renders the asterisk.
+* The theme takes a `required` key for the classes of the asterisk.
+* `SCHEMA_VERSION` is now `1.15`.
+
 ## 1.15.0 - 2026-11-07
 * `Select::optionCode(string $column = 'code')` shows a code column in front of each option label, for example
   `8010   Rent to individuals`. Option rows given to `options()`, `optionGroups()` or `optionsFor()` carry the code under
