@@ -55,3 +55,23 @@ describe('required indicator', function () {
             ->and(Translatable::make('name')->locales(['nl', 'en'])->toSchema())->not->toHaveKey('markRequired');
     });
 });
+
+describe('plain-text help', function () {
+    it('sends the help as text next to an escaped fallback', function () {
+        $schema = Text::make('a')->helpText('Use <b> & co')->toSchema();
+
+        expect($schema['helpText'])->toBe('Use <b> & co')
+            ->and($schema['help'])->toBe('Use &lt;b&gt; &amp; co');
+    });
+
+    it('takes html: false on help()', function () {
+        expect(Text::make('a')->help('1 < 2', html: false)->toSchema()['helpText'])->toBe('1 < 2');
+    });
+
+    it('keeps rendering help as html by default and drops an earlier plain-text help', function () {
+        $schema = Text::make('a')->helpText('old')->help('new')->toSchema();
+
+        expect($schema['help'])->toBe('new')
+            ->and($schema)->not->toHaveKey('helpText');
+    });
+});

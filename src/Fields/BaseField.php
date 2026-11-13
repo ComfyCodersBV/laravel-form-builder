@@ -122,9 +122,22 @@ abstract class BaseField implements JsonSerializable
         return $this;
     }
 
-    public function help(string|HtmlString $text): static
+    public function help(string|HtmlString $text, bool $html = true): static
     {
+        if (! $html) {
+            return $this->helpText($text instanceof HtmlString ? $text->toHtml() : $text);
+        }
+
+        unset($this->attributes['helpText']);
         $this->attributes['help'] = $text instanceof HtmlString ? $text->toHtml() : e($text);
+
+        return $this;
+    }
+
+    public function helpText(string $text): static
+    {
+        $this->attributes['help'] = e($text);
+        $this->attributes['helpText'] = $text;
 
         return $this;
     }

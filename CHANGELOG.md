@@ -10,6 +10,9 @@ All notable changes to `laravel-form-builder` will be documented in this file.
   `->markRequired(false)` never. `config('form-builder.required_indicator')` (default `true`) switches the derived
   marking off app-wide; `->markRequired()` still applies then. laravel-vue-form-builder 1.21 renders the asterisk.
 * The theme takes a `required` key for the classes of the asterisk.
+* `->helpText($text)` and `->help($text, html: false)` send the help as plain text in `helpText`, next to an escaped
+  `help` for older renderers. laravel-vue-form-builder 1.21 renders `helpText` as text and keeps its line breaks.
+  `->help()` keeps sending HTML as before.
 * `SCHEMA_VERSION` is now `1.15`.
 
 ## 1.15.0 - 2026-11-07
