@@ -75,3 +75,12 @@ describe('plain-text help', function () {
             ->and($schema)->not->toHaveKey('helpText');
     });
 });
+
+describe('wizard step parameter', function () {
+    it('sends the step query parameter only when set', function () {
+        expect(FormConfig::make()->jsonSerialize())->not->toHaveKey('stepParam')
+            ->and(FormConfig::make()->stepParam()->jsonSerialize()['stepParam'])->toBe('step')
+            ->and(FormConfig::make()->stepParam('stap')->jsonSerialize()['stepParam'])->toBe('stap')
+            ->and(FormConfig::make()->stepParam('stap')->stepParam(null)->jsonSerialize())->not->toHaveKey('stepParam');
+    });
+});

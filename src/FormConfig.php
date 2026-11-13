@@ -60,6 +60,8 @@ class FormConfig implements JsonSerializable
 
     protected ?bool $labelsAsAttributes = null;
 
+    protected ?string $stepParam = null;
+
     public function __construct(array $fields = [])
     {
         $this->fields($fields);
@@ -168,6 +170,18 @@ class FormConfig implements JsonSerializable
         return $this;
     }
 
+    public function stepParam(?string $param = 'step'): static
+    {
+        $this->stepParam = $param === '' ? null : $param;
+
+        return $this;
+    }
+
+    public function getStepParam(): ?string
+    {
+        return $this->stepParam;
+    }
+
     public function getColumns(): ?int
     {
         return $this->columns;
@@ -246,6 +260,10 @@ class FormConfig implements JsonSerializable
             'submitOnChange' => $this->submitOnChange,
             'validateSteps' => $this->validateSteps,
         ];
+
+        if (! is_null($this->stepParam)) {
+            $payload['stepParam'] = $this->stepParam;
+        }
 
         if (is_null($this->columns)) {
             return $payload;

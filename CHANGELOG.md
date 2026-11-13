@@ -13,6 +13,8 @@ All notable changes to `laravel-form-builder` will be documented in this file.
 * `->helpText($text)` and `->help($text, html: false)` send the help as plain text in `helpText`, next to an escaped
   `help` for older renderers. laravel-vue-form-builder 1.21 renders `helpText` as text and keeps its line breaks.
   `->help()` keeps sending HTML as before.
+* `FormConfig::stepParam('step')` sends `stepParam`, the query parameter a wizard keeps its current step in.
+  laravel-vue-form-builder 1.21 writes the step there and reads it back on load.
 * `SCHEMA_VERSION` is now `1.15`.
 
 ## 1.15.0 - 2026-11-07
