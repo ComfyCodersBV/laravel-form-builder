@@ -68,6 +68,30 @@ class Text extends BaseField
         return $this;
     }
 
+    /**
+     * @param  iterable<int|string, string|int|float>  $suggestions
+     */
+    public function suggestions(iterable $suggestions): static
+    {
+        $values = [];
+
+        foreach ($suggestions as $suggestion) {
+            $values[] = (string) $suggestion;
+        }
+
+        $values = array_values(array_unique(array_filter($values, fn (string $value): bool => $value !== '')));
+
+        if ($values === []) {
+            unset($this->attributes['suggestions']);
+
+            return $this;
+        }
+
+        $this->attributes['suggestions'] = $values;
+
+        return $this;
+    }
+
     public function prepareForValidation(mixed $value): mixed
     {
         if (! ($this->attributes['uppercase'] ?? false) || ! is_string($value)) {

@@ -18,6 +18,7 @@ All notable changes to `laravel-form-builder` will be documented in this file.
   `InvalidArgumentException`.
 * `Text::uppercase()` sends `uppercase: true`, and `FormConfig::validate()` upper-cases the value before it validates,
   also inside a repeater.
+* `Text::suggestions([...])` sends `suggestions`, each value once as a string, for a `<datalist>`.
 
 ## 1.18.0 - 2026-11-16
 * `Repeater::table()` sends `table: true`, so a renderer shows the rows as a table with the labels once in a header.

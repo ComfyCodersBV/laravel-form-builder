@@ -57,3 +57,9 @@ it('upper-cases a text field inside a repeater row', function () {
 
     expect($form->validate(Request::create('/', 'POST', ['rows' => [['code' => 'ab']]]))['rows'][0]['code'])->toBe('AB');
 });
+
+it('sends suggestions once each', function () {
+    expect(Text::make('prefix')->suggestions(['AB', 'CD', 'AB', ''])->toSchema()['suggestions'])
+        ->toBe(['AB', 'CD'])
+        ->and(Text::make('prefix')->suggestions([])->toSchema())->not->toHaveKey('suggestions');
+});
