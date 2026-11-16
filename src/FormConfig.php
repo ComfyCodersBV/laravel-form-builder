@@ -113,6 +113,8 @@ class FormConfig implements JsonSerializable
 
     protected ?string $stepParam = null;
 
+    protected ?string $errorBag = null;
+
     public function __construct(array $fields = [])
     {
         $this->fields($fields);
@@ -228,6 +230,18 @@ class FormConfig implements JsonSerializable
         return $this;
     }
 
+    public function errorBag(?string $bag): static
+    {
+        $this->errorBag = $bag === '' ? null : $bag;
+
+        return $this;
+    }
+
+    public function getErrorBag(): ?string
+    {
+        return $this->errorBag;
+    }
+
     public function getStepParam(): ?string
     {
         return $this->stepParam;
@@ -318,6 +332,10 @@ class FormConfig implements JsonSerializable
 
         if (! is_null($this->stepParam)) {
             $payload['stepParam'] = $this->stepParam;
+        }
+
+        if (! is_null($this->errorBag)) {
+            $payload['errorBag'] = $this->errorBag;
         }
 
         if (is_null($this->columns)) {
@@ -505,12 +523,16 @@ class FormConfig implements JsonSerializable
         $request = $this->prepareForValidation($request ?? request());
 
         $messages = $params['messages'] ?? $params[0] ?? [];
-        $attributes = $params['attributes'] ?? $params[1] ?? [];
-
-        return $this->normalizeValues($request->validate($this->getRules(), $messages, [
+        $attributes = [
             ...$this->getAttributes(),
-            ...$attributes,
-        ]));
+            ...($params['attributes'] ?? $params[1] ?? []),
+        ];
+
+        if (is_null($this->errorBag)) {
+            return $this->normalizeValues($request->validate($this->getRules(), $messages, $attributes));
+        }
+
+        return $this->normalizeValues($request->validateWithBag($this->errorBag, $this->getRules(), $messages, $attributes));
     }
 
     protected function prepareForValidation(Request $request): Request
