@@ -24,6 +24,7 @@ All notable changes to `laravel-form-builder` will be documented in this file.
   renderer from `->expression()`, in the language of `->if()`. It is never validated: `getRules()` and `validate()`
   skip it, in sections and repeaters too, and rules added to it are ignored. `BaseField::submitsValue()` tells whether
   a field carries a value; it is `false` for `Display` only.
+* `SCHEMA_VERSION` is now `1.17`.
 
 ## 1.18.0 - 2026-11-16
 * `Repeater::table()` sends `table: true`, so a renderer shows the rows as a table with the labels once in a header.
