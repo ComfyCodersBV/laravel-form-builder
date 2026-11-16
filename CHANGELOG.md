@@ -11,6 +11,7 @@ All notable changes to `laravel-form-builder` will be documented in this file.
   by `make:form-request`, through the new static `AbstractForm::errorBag()`. Requests generated before keep the
   default bag until they get the `failedValidation()` of the new stub. A form without a bag leaves the `$errorBag` of
   the request as it is.
+* `SCHEMA_VERSION` is now `1.19`.
 
 ## 1.21.0 - 2026-11-16
 * `dates.display_format` in `config/form-builder.php` sets the `format` of every `Date` and `DateTime` field, also with
