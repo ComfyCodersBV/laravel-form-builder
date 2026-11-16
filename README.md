@@ -52,6 +52,12 @@ form throws an `InvalidArgumentException` for a field (or remove flag) named aft
 `errors`, `reset`, `query` or `transform`, instead of letting the field show and send that property. The list is
 `FormConfig::RESERVED_FIELD_NAMES`. Dotted names and repeater sub-fields are not affected.
 
+## Fields without a value
+
+`BaseField::submitsValue()` is `false` for a field that only shows something, such as `Display`. `FormConfig` leaves
+such a field out of `getRules()`, `validate()`, the defaults and the reserved-name check, in sections and repeaters
+too. A renderer leaves it out of the payload.
+
 ## Classes on a field
 
 `->wrapperClass()` replaces the classes of the wrapper around a field's label, control, help and error. `->class()` is

@@ -281,6 +281,11 @@ abstract class BaseField implements JsonSerializable
         return $this;
     }
 
+    public function submitsValue(): bool
+    {
+        return true;
+    }
+
     public function getName(): ?string
     {
         return $this->name;

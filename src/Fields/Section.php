@@ -85,7 +85,7 @@ class Section extends BaseField
         foreach ($this->children as $field) {
             $name = $field->getName();
 
-            if ($name !== null && $name !== '' && ! $field instanceof self) {
+            if ($name !== null && $name !== '' && ! $field instanceof self && $field->submitsValue()) {
                 $rules[$name] = $field->getRules();
             }
 

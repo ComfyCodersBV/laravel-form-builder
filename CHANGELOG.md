@@ -20,6 +20,10 @@ All notable changes to `laravel-form-builder` will be documented in this file.
   also inside a repeater.
 * `Text::suggestions([...])` sends `suggestions`, each value once as a string, for a `<datalist>`.
 * `Textarea::rows(4)` sends `rows`, at least `1`.
+* New `Display` field (type `display`): a read-only value with a label and help, from `->content()` or computed in the
+  renderer from `->expression()`, in the language of `->if()`. It is never validated: `getRules()` and `validate()`
+  skip it, in sections and repeaters too, and rules added to it are ignored. `BaseField::submitsValue()` tells whether
+  a field carries a value; it is `false` for `Display` only.
 
 ## 1.18.0 - 2026-11-16
 * `Repeater::table()` sends `table: true`, so a renderer shows the rows as a table with the labels once in a header.
