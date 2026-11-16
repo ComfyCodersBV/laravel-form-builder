@@ -20,4 +20,40 @@ class Checkboxes extends BaseField
 
         return $this;
     }
+
+    /**
+     * @param  array<string, string>  $columns
+     */
+    public function columns(array $columns): static
+    {
+        if ($columns === []) {
+            unset($this->attributes['optionColumns']);
+
+            return $this;
+        }
+
+        $this->attributes['optionColumns'] = array_map(
+            fn (int|string $key, string $label): array => [
+                'key' => (string) $key,
+                'label' => $label,
+            ],
+            array_keys($columns),
+            $columns,
+        );
+
+        return $this;
+    }
+
+    public function selectAll(bool $selectAll = true): static
+    {
+        if (! $selectAll) {
+            unset($this->attributes['selectAll']);
+
+            return $this;
+        }
+
+        $this->attributes['selectAll'] = true;
+
+        return $this;
+    }
 }

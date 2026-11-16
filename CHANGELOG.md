@@ -10,6 +10,9 @@ All notable changes to `laravel-form-builder` will be documented in this file.
   the submitted other value. A stored value that has become disabled therefore fails validation.
 * `Select::separator()` gives an option row (`['separator' => true, 'disabled' => true]`) that a renderer shows as a
   divider line. It has no value.
+* `Checkboxes::columns(['lot' => 'Lot', ...])` sends `optionColumns: [{key, label}]`, so a renderer shows the options
+  as rows of a table with those columns, read from the keys of each option row. `->selectAll()` sends
+  `selectAll: true` for "Select all" and "Select none" buttons.
 
 ## 1.18.0 - 2026-11-16
 * `Repeater::table()` sends `table: true`, so a renderer shows the rows as a table with the labels once in a header.
