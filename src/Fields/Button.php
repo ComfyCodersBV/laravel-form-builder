@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace TranquilTools\FormBuilder\Fields;
 
 use Illuminate\Support\HtmlString;
+use InvalidArgumentException;
 
 class Button extends BaseField
 {
@@ -27,6 +28,8 @@ class Button extends BaseField
     protected ?string $labelExpression = null;
 
     protected ?string $disabledIf = null;
+
+    protected ?string $emit = null;
 
     public function label(string|HtmlString $label): static
     {
@@ -60,6 +63,20 @@ class Button extends BaseField
     public function disabledIf(string $expression): static
     {
         $this->disabledIf = $expression;
+
+        return $this;
+    }
+
+    public function emit(string $event): static
+    {
+        if (trim($event) === '') {
+            throw new InvalidArgumentException(sprintf(
+                'The button "%s" emits an event without a name. Pass a name, for example ->emit(\'make-rows\').',
+                $this->getName() ?? 'button',
+            ));
+        }
+
+        $this->emit = $event;
 
         return $this;
     }
@@ -101,6 +118,14 @@ class Button extends BaseField
 
     public function toSchema(): array
     {
+        if (! is_null($this->emit) && ! is_null($this->deleteUrl)) {
+            throw new InvalidArgumentException(sprintf(
+                'The button "%s" has a delete URL and emits "%s". A button with a delete URL sends the DELETE request itself and never emits. Drop one of the two.',
+                $this->getName() ?? 'button',
+                $this->emit,
+            ));
+        }
+
         $schema = parent::toSchema();
 
         if (! is_null($this->confirmTitle) || ! is_null($this->confirmMessage)) {
@@ -117,6 +142,7 @@ class Button extends BaseField
             'ariaLabel' => $this->ariaLabel,
             'labelExpression' => $this->labelExpression,
             'disabledIf' => $this->disabledIf,
+            'emit' => $this->emit,
         ]));
     }
 }

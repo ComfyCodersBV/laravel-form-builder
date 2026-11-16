@@ -45,6 +45,9 @@ in the renderer, in Vue through `fieldOverrides`:
 <Form :schema="form" :field-overrides="{ preview: { onClick: () => (previewOpen = true) } }" />
 ```
 
+A `Button` with `->emit('preview')` sends `emit`, so the renderer reports the click as a named event instead (in Vue:
+`@button` on `<Form>`) and the form class shows the wiring.
+
 ## Conditions that validate
 
 `->if('action', 'rebook')` (one value or a list) sends `when: {field, values}` for the renderer, plus an equivalent

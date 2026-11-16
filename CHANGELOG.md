@@ -17,6 +17,9 @@ All notable changes to `laravel-form-builder` will be documented in this file.
   field adds to a form, and `Section::nestedRules()` and `Repeater::nestedRules()` take the scope of the row.
 * `Button::labelExpression()` and `Button::disabledIf()` send `labelExpression` and `disabledIf`: an expression in the
   language of `->if()` for the label and for the disabled state, also on `Submit` and `DeleteButton`.
+* `Button::emit('make-rows')` sends `emit`, so a renderer can report the click as a named event. An empty name throws
+  an `InvalidArgumentException`, and so do `Submit::emit()`, `DeleteButton::emit()` and serializing a `Button` with
+  both `->emit()` and `->deleteUrl()`.
 
 ## 1.19.0 - 2026-11-16
 * A `Select` option given as an array with `'disabled' => true` is sent as disabled. Rows take `value` and `label`, as a
