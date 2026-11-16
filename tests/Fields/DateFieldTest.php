@@ -266,3 +266,23 @@ it('makes a touch picker clearable unless the field is required', function () {
         ->and(DateTime::make('starts_at')->touchPicker()->rules(['required'])->clearable()->toSchema()['clearable'])->toBeTrue()
         ->and(DateTime::make('starts_at')->toSchema())->not->toHaveKey('clearable');
 });
+
+it('shows dates in the configured display format when the field sets none', function () {
+    config(['form-builder.dates.display_format' => 'DD-MM-YYYY']);
+
+    expect(Date::make('at')->toSchema()['format'])->toBe('DD-MM-YYYY')
+        ->and(DateTime::make('at')->toSchema()['format'])->toBe('DD-MM-YYYY')
+        ->and(Date::make('period')->range()->toSchema()['format'])->toBe('DD-MM-YYYY');
+});
+
+it('lets the field format win over the configured display format', function () {
+    config(['form-builder.dates.display_format' => 'DD-MM-YYYY']);
+
+    expect(Date::make('at')->format('YYYY/MM/DD')->toSchema()['format'])->toBe('YYYY/MM/DD');
+});
+
+it('sends no format without a configured display format', function () {
+    config(['form-builder.dates.display_format' => null]);
+
+    expect(Date::make('at')->toSchema())->not->toHaveKey('format');
+});

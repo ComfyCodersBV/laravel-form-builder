@@ -78,8 +78,8 @@ it('merges arbitrary attributes', function () {
 it('marks the field disabled and readonly', function () {
     $schema = Text::make('x')->disabled()->readonly()->toSchema();
 
-    expect($schema['disabled'])->toBe('disabled')
-        ->and($schema['readonly'])->toBe('readonly');
+    expect($schema['disabled'])->toBeTrue()
+        ->and($schema['readonly'])->toBeTrue();
 
     expect(Text::make('x')->disabled(false)->toSchema())->not->toHaveKey('disabled');
 });

@@ -23,7 +23,7 @@ version stream, no duplication.
 |                           |                                                                                            |
 |---------------------------|--------------------------------------------------------------------------------------------|
 | `src/`                    | `AbstractForm`, `FormConfig`, every field type (also `Step` for multi-step forms), validation rules, the `make:form` commands |
-| `config/form-builder.php` | theme, required indicator, WYSIWYG defaults, reCAPTCHA and key-value settings              |
+| `config/form-builder.php` | theme, required indicator, date display format and timezone, WYSIWYG defaults, reCAPTCHA and key-value settings |
 | `resources/lang/`         | translations used by PHP-side field labels                                                 |
 | `stubs/`                  | templates for the generator commands                                                       |
 
@@ -69,6 +69,12 @@ form throws an `InvalidArgumentException` for a field (or remove flag) named aft
 `BaseField::submitsValue()` is `false` for a field that only shows something, such as `Display`. `FormConfig` leaves
 such a field out of `getRules()`, `validate()`, the defaults and the reserved-name check, in sections and repeaters
 too. A renderer leaves it out of the payload.
+
+## Date display format
+
+`'dates' => ['display_format' => 'DD-MM-YYYY']` in `config/form-builder.php` sends that `format` for every `Date` and
+`DateTime` field without its own `->format()`. `->format()` on a field wins. `null` (the default) sends no format, so
+the renderer shows the date the way the browser does.
 
 ## Classes on a field
 

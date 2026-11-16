@@ -45,6 +45,7 @@ return [
     'required_indicator' => true,
 
     'dates' => [
+        'display_format' => null,
         'timezone' => null,
         'validate_bounds' => false,
     ],
