@@ -291,6 +291,8 @@ class FormConfig implements JsonSerializable
     {
         $this->guardAgainstReservedNames();
 
+        ConditionChain::apply($this->getFields());
+
         $schemas = array_map(fn ($field) => $field->toSchema(), $this->getFields());
         $schemas = Radio::normalize($schemas);
 
@@ -448,24 +450,15 @@ class FormConfig implements JsonSerializable
 
     public function getRules(): array
     {
-        return array_reduce(
-            $this->getFields(),
-            function (array $carry, BaseField $field): array {
-                $name = $field->getName();
-                if ($name !== null && $name !== '' && ! $field instanceof Section && $field->submitsValue()) {
-                    $carry[$name] = $field->getRules();
-                }
+        ConditionChain::apply($this->getFields());
 
-                if (method_exists($field, 'nestedRules')) {
-                    foreach ($field->nestedRules() as $ruleName => $rules) {
-                        $carry[$ruleName] = $rules;
-                    }
-                }
+        $rules = [];
 
-                return $carry;
-            },
-            []
-        );
+        foreach ($this->getFields() as $field) {
+            $rules = array_merge($rules, $field->validationRules());
+        }
+
+        return $rules;
     }
 
     /**

@@ -45,6 +45,15 @@ in the renderer, in Vue through `fieldOverrides`:
 <Form :schema="form" :field-overrides="{ preview: { onClick: () => (previewOpen = true) } }" />
 ```
 
+## Conditions that validate
+
+`->if('action', 'rebook')` (one value or a list) sends `when: {field, values}` for the renderer, plus an equivalent
+`condition` expression for older renderers, and puts `exclude_unless:action,rebook` in front of the field's rules in
+`getRules()`, `validate()` and `UsesForm`. On a `Section` or `Step` the rule covers every field inside it, and inside a
+`Repeater` the other field is a sub-field of the same row (`exclude_unless:barrels.*.kind,full`). A field that depends
+on a hidden field is hidden too: the chain goes to `when.also` and into the rules. `->if('expression')` keeps working
+and adds no rule.
+
 ## Reserved field names
 
 The renderer keeps every value on Inertia's `useForm()` object, next to its own properties and methods. Serializing a

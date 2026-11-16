@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace TranquilTools\FormBuilder\Fields;
 
+use TranquilTools\FormBuilder\ConditionChain;
+
 class Repeater extends BaseField
 {
     protected string $type = 'repeater';
@@ -93,6 +95,8 @@ class Repeater extends BaseField
 
     public function toSchema(): array
     {
+        ConditionChain::apply($this->subFields);
+
         return array_merge(parent::toSchema(), [
             'fields' => array_map(
                 fn (BaseField $field): array => $field->toSchema(),
@@ -102,12 +106,9 @@ class Repeater extends BaseField
     }
 
     /**
-     * Expand the sub-field rules into dotted, wildcard rules
-     * (e.g. `ingredients.*.name`) so each row is validated server-side.
-     *
      * @return array<string, array<int, mixed>>
      */
-    public function nestedRules(): array
+    public function nestedRules(string $scope = ''): array
     {
         $name = $this->getName();
 
@@ -115,6 +116,9 @@ class Repeater extends BaseField
             return [];
         }
 
+        ConditionChain::apply($this->subFields);
+
+        $rowScope = "{$scope}{$name}.*.";
         $rules = [];
 
         foreach ($this->subFields as $field) {
@@ -124,18 +128,12 @@ class Repeater extends BaseField
                 continue;
             }
 
-            $subRules = $field->getRules();
+            foreach ($field->validationRules($rowScope) as $ruleName => $subRules) {
+                if ($subRules === []) {
+                    continue;
+                }
 
-            if ($subRules !== []) {
-                $rules["{$name}.*.{$subName}"] = $subRules;
-            }
-
-            if (! method_exists($field, 'nestedRules')) {
-                continue;
-            }
-
-            foreach ($field->nestedRules() as $nestedName => $nestedRules) {
-                $rules["{$name}.*.{$nestedName}"] = $nestedRules;
+                $rules["{$name}.*.{$ruleName}"] = $subRules;
             }
         }
 

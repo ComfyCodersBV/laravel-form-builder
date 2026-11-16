@@ -2,6 +2,20 @@
 
 All notable changes to `laravel-form-builder` will be documented in this file.
 
+## 1.20.0 - 2026-11-16
+* `->if('action', 'rebook')` takes a field name and a value, or a list of values, next to the existing
+  `->if('expression')`. The schema carries `when: {field, values}` and an equivalent `condition` expression for older
+  renderers. `FormConfig::getRules()`, `validate()` and `UsesForm` put `exclude_unless:action,rebook` in front of the
+  field's rules and its nested rules, so Laravel skips the field and leaves it out of the validated data while the
+  condition does not hold. Values compare as text, `true` as `true` or `1`, `false` as `false` or `0`, `null` as
+  `null`, and a value with a comma is quoted. On a `Section` or `Step` the rule covers every field inside it. Inside a
+  `Repeater` the other field is read from the same row (`exclude_unless:barrels.*.kind,full`), also in a nested
+  repeater. A field that depends on a field hidden by its own condition or by that of its section is hidden too: the
+  schema lists the chain under `when.also` and the rules get one `exclude_unless` per condition, within the form or
+  within one repeater row. A circle of conditions stops where it closes, and a name that two fields share is not
+  followed. A later `->if()` replaces an earlier one, in either form. `BaseField::validationRules()` gives the rules a
+  field adds to a form, and `Section::nestedRules()` and `Repeater::nestedRules()` take the scope of the row.
+
 ## 1.19.0 - 2026-11-16
 * A `Select` option given as an array with `'disabled' => true` is sent as disabled. Rows take `value` and `label`, as a
   `Radio` does, or the field's `optionValue` and `optionLabel`; a map takes an array as its value. The field adds a
