@@ -24,6 +24,10 @@ class Button extends BaseField
 
     protected ?string $ariaLabel = null;
 
+    protected ?string $labelExpression = null;
+
+    protected ?string $disabledIf = null;
+
     public function label(string|HtmlString $label): static
     {
         if ($label instanceof HtmlString) {
@@ -42,6 +46,20 @@ class Button extends BaseField
     public function ariaLabel(string $label): static
     {
         $this->ariaLabel = $label;
+
+        return $this;
+    }
+
+    public function labelExpression(string $expression): static
+    {
+        $this->labelExpression = $expression;
+
+        return $this;
+    }
+
+    public function disabledIf(string $expression): static
+    {
+        $this->disabledIf = $expression;
 
         return $this;
     }
@@ -97,6 +115,8 @@ class Button extends BaseField
             'variant' => $this->variant,
             'labelHtml' => $this->labelHtml,
             'ariaLabel' => $this->ariaLabel,
+            'labelExpression' => $this->labelExpression,
+            'disabledIf' => $this->disabledIf,
         ]));
     }
 }

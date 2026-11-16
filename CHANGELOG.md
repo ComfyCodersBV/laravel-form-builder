@@ -15,6 +15,8 @@ All notable changes to `laravel-form-builder` will be documented in this file.
   within one repeater row. A circle of conditions stops where it closes, and a name that two fields share is not
   followed. A later `->if()` replaces an earlier one, in either form. `BaseField::validationRules()` gives the rules a
   field adds to a form, and `Section::nestedRules()` and `Repeater::nestedRules()` take the scope of the row.
+* `Button::labelExpression()` and `Button::disabledIf()` send `labelExpression` and `disabledIf`: an expression in the
+  language of `->if()` for the label and for the disabled state, also on `Submit` and `DeleteButton`.
 
 ## 1.19.0 - 2026-11-16
 * A `Select` option given as an array with `'disabled' => true` is sent as disabled. Rows take `value` and `label`, as a
