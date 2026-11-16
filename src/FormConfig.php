@@ -28,7 +28,7 @@ class FormConfig implements JsonSerializable
      * Renderers compare their supported version against this and refuse to render
      * silently wrong output.
      */
-    public const SCHEMA_VERSION = '1.16';
+    public const SCHEMA_VERSION = '1.17';
 
     /**
      * @var list<string>
@@ -452,7 +452,7 @@ class FormConfig implements JsonSerializable
             $this->getFields(),
             function (array $carry, BaseField $field): array {
                 $name = $field->getName();
-                if ($name !== null && $name !== '' && ! $field instanceof Section) {
+                if ($name !== null && $name !== '' && ! $field instanceof Section && $field->submitsValue()) {
                     $carry[$name] = $field->getRules();
                 }
 
@@ -582,6 +582,10 @@ class FormConfig implements JsonSerializable
                     ...$this->valueFields($field->getFields()),
                 ];
 
+                continue;
+            }
+
+            if (! $field->submitsValue()) {
                 continue;
             }
 

@@ -2,6 +2,30 @@
 
 All notable changes to `laravel-form-builder` will be documented in this file.
 
+## 1.19.0 - 2026-11-16
+* A `Select` option given as an array with `'disabled' => true` is sent as disabled. Rows take `value` and `label`, as a
+  `Radio` does, or the field's `optionValue` and `optionLabel`; a map takes an array as its value. The field adds a
+  `DisabledOption` rule that refuses a disabled value, for a multiple select every value, from `->options()` and
+  `->optionGroups()`. With `->optionsFor()` the `DependentOption` rule refuses a value that is disabled in the list of
+  the submitted other value. A stored value that has become disabled therefore fails validation.
+* `Select::separator()` gives an option row (`['separator' => true, 'disabled' => true]`) that a renderer shows as a
+  divider line. It has no value.
+* `Checkboxes::columns(['lot' => 'Lot', ...])` sends `optionColumns: [{key, label}]`, so a renderer shows the options
+  as rows of a table with those columns, read from the keys of each option row. `->selectAll()` sends
+  `selectAll: true` for "Select all" and "Select none" buttons.
+* `Text::charset('0-9')` sends `charset` and adds a `Charset` rule that checks the value against `/^[0-9]*$/u` and fails
+  with the `validation.regex` message. An empty value passes. A class that is no valid regular expression throws an
+  `InvalidArgumentException`.
+* `Text::uppercase()` sends `uppercase: true`, and `FormConfig::validate()` upper-cases the value before it validates,
+  also inside a repeater.
+* `Text::suggestions([...])` sends `suggestions`, each value once as a string, for a `<datalist>`.
+* `Textarea::rows(4)` sends `rows`, at least `1`.
+* New `Display` field (type `display`): a read-only value with a label and help, from `->content()` or computed in the
+  renderer from `->expression()`, in the language of `->if()`. It is never validated: `getRules()` and `validate()`
+  skip it, in sections and repeaters too, and rules added to it are ignored. `BaseField::submitsValue()` tells whether
+  a field carries a value; it is `false` for `Display` only.
+* `SCHEMA_VERSION` is now `1.17`.
+
 ## 1.18.0 - 2026-11-16
 * `Repeater::table()` sends `table: true`, so a renderer shows the rows as a table with the labels once in a header.
   laravel-vue-form-builder 1.23 renders it; an older renderer shows the rows as before.

@@ -120,7 +120,7 @@ class Repeater extends BaseField
         foreach ($this->subFields as $field) {
             $subName = $field->getName();
 
-            if ($subName === null || $subName === '') {
+            if ($subName === null || $subName === '' || ! $field->submitsValue()) {
                 continue;
             }
 
