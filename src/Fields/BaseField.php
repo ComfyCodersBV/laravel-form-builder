@@ -134,7 +134,7 @@ abstract class BaseField implements JsonSerializable
     public function disabled(bool $disabled = true): static
     {
         if ($disabled) {
-            $this->attributes['disabled'] = 'disabled';
+            $this->attributes['disabled'] = true;
         }
 
         return $this;
@@ -404,7 +404,7 @@ abstract class BaseField implements JsonSerializable
     public function readonly(bool $readonly = true): static
     {
         if ($readonly) {
-            $this->attributes['readonly'] = 'readonly';
+            $this->attributes['readonly'] = true;
         }
 
         return $this;

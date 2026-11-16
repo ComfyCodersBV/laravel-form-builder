@@ -6,6 +6,8 @@ All notable changes to `laravel-form-builder` will be documented in this file.
 * `dates.display_format` in `config/form-builder.php` sets the `format` of every `Date` and `DateTime` field, also with
   `range()`, that has no `->format()` of its own. `->format()` on a field wins. `null`, the default, sends no format as
   before.
+* `->disabled()` and `->readonly()` send `true` instead of the strings `'disabled'` and `'readonly'`, like a disabled
+  option does. Renderers that cast the value to a boolean, such as `laravel-vue-form-builder`, behave the same.
 
 ## 1.20.0 - 2026-11-16
 * `->if('action', 'rebook')` takes a field name and a value, or a list of values, next to the existing
