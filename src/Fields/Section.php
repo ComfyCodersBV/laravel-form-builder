@@ -75,23 +75,20 @@ class Section extends BaseField
         return [];
     }
 
+    protected function hasOwnRuleKey(): bool
+    {
+        return false;
+    }
+
     /**
      * @return array<string, array<int, mixed>>
      */
-    public function nestedRules(): array
+    public function nestedRules(string $scope = ''): array
     {
         $rules = [];
 
         foreach ($this->children as $field) {
-            $name = $field->getName();
-
-            if ($name !== null && $name !== '' && ! $field instanceof self && $field->submitsValue()) {
-                $rules[$name] = $field->getRules();
-            }
-
-            if (method_exists($field, 'nestedRules')) {
-                $rules = array_merge($rules, $field->nestedRules());
-            }
+            $rules = array_merge($rules, $field->validationRules($scope));
         }
 
         return $rules;

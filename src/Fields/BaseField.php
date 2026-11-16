@@ -29,6 +29,16 @@ abstract class BaseField implements JsonSerializable
 
     protected ?string $condition = null;
 
+    /**
+     * @var array{field: string, values: list<string>}|null
+     */
+    protected ?array $visibleWhen = null;
+
+    /**
+     * @var list<array{field: string, values: list<string>}>
+     */
+    protected array $inheritedVisibility = [];
+
     protected array $rules = [];
 
     protected array $attributes = [];
@@ -130,11 +140,175 @@ abstract class BaseField implements JsonSerializable
         return $this;
     }
 
-    public function if(string $condition): static
+    /**
+     * @param  string|int|float|bool|array<int, string|int|float|bool|null>|null  $value
+     */
+    public function if(string $condition, string|int|float|bool|array|null $value = null): static
     {
-        $this->condition = $condition;
+        if (func_num_args() === 1) {
+            $this->condition = $condition;
+            $this->visibleWhen = null;
+            $this->inheritedVisibility = [];
+
+            return $this;
+        }
+
+        if (trim($condition) === '') {
+            throw new InvalidArgumentException(sprintf(
+                'The field "%s" depends on a field without a name. Pass the name of the field it depends on, for example ->if(\'action\', \'rebook\').',
+                $this->getName() ?? 'field_name',
+            ));
+        }
+
+        $this->visibleWhen = [
+            'field' => $condition,
+            'values' => self::conditionValues(is_array($value) ? $value : [$value]),
+        ];
+        $this->condition = null;
+        $this->inheritedVisibility = [];
 
         return $this;
+    }
+
+    /**
+     * @param  array{field: string, values: list<string>}  $visibility
+     */
+    private static function conditionExpression(array $visibility): string
+    {
+        return sprintf(
+            '!Array.isArray(form[%2$s]) && %1$s.includes(String(form[%2$s] === \'\' ? null : (form[%2$s] ?? null)))',
+            json_encode($visibility['values'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR),
+            json_encode($visibility['field'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR),
+        );
+    }
+
+    /**
+     * @param  array<int, mixed>  $values
+     * @return list<string>
+     */
+    private static function conditionValues(array $values): array
+    {
+        $strings = [];
+
+        foreach ($values as $value) {
+            $strings = [
+                ...$strings,
+                ...match (true) {
+                    $value === true => ['true', '1'],
+                    $value === false => ['false', '0'],
+                    is_null($value) => ['null'],
+                    is_scalar($value) => [(string) $value],
+                    default => throw new InvalidArgumentException('A condition value must be a string, number, boolean or null.'),
+                },
+            ];
+        }
+
+        return array_values(array_unique($strings));
+    }
+
+    /**
+     * @return array{field: string, values: list<string>}|null
+     */
+    public function getVisibleWhen(): ?array
+    {
+        return $this->visibleWhen;
+    }
+
+    /**
+     * @param  list<array{field: string, values: list<string>}>  $conditions
+     */
+    public function inheritVisibility(array $conditions): static
+    {
+        $this->inheritedVisibility = is_null($this->visibleWhen)
+            ? []
+            : array_values(array_filter(
+                $conditions,
+                fn (array $condition): bool => $condition !== $this->visibleWhen && $condition['field'] !== $this->getName(),
+            ));
+
+        return $this;
+    }
+
+    /**
+     * @return list<array{field: string, values: list<string>}>
+     */
+    public function visibilityConditions(): array
+    {
+        if (is_null($this->visibleWhen)) {
+            return [];
+        }
+
+        return [
+            $this->visibleWhen,
+            ...$this->inheritedVisibility,
+        ];
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function exclusionRules(string $scope = ''): array
+    {
+        return array_map(
+            fn (array $visibility): string => sprintf(
+                'exclude_unless:%s',
+                implode(',', array_map(
+                    self::ruleParameter(...),
+                    [
+                        $scope.$visibility['field'],
+                        ...$visibility['values'],
+                    ],
+                )),
+            ),
+            $this->visibilityConditions(),
+        );
+    }
+
+    private static function ruleParameter(string $parameter): string
+    {
+        if (! str_contains($parameter, ',') && ! str_contains($parameter, '"')) {
+            return $parameter;
+        }
+
+        return sprintf('"%s"', str_replace('"', '""', $parameter));
+    }
+
+    /**
+     * @return array<string, array<int, mixed>>
+     */
+    public function validationRules(string $scope = ''): array
+    {
+        $rules = [];
+        $name = $this->getName();
+
+        if (! is_null($name) && $name !== '' && $this->hasOwnRuleKey()) {
+            $rules[$name] = $this->getRules();
+        }
+
+        if (method_exists($this, 'nestedRules')) {
+            foreach ($this->nestedRules($scope) as $nestedName => $nestedRules) {
+                $rules[$nestedName] = $nestedRules;
+            }
+        }
+
+        $exclusions = $this->exclusionRules($scope);
+
+        if ($exclusions === []) {
+            return $rules;
+        }
+
+        return array_map(
+            fn (array $fieldRules): array => [
+                ...$exclusions,
+                ...$fieldRules,
+            ],
+            $rules,
+        );
+    }
+
+    protected function hasOwnRuleKey(): bool
+    {
+        return $this->submitsValue();
     }
 
     public function help(string|HtmlString $text, bool $html = true): static
@@ -327,7 +501,8 @@ abstract class BaseField implements JsonSerializable
     public function toSchema(): array
     {
         $schema = [
-            'condition' => $this->condition,
+            'condition' => $this->schemaCondition(),
+            ...$this->schemaVisibility(),
             'default' => $this->default,
             'label' => $this->label,
             'name' => $this->getName(),
@@ -340,6 +515,40 @@ abstract class BaseField implements JsonSerializable
         }
 
         return array_merge($schema, $this->attributes);
+    }
+
+    private function schemaCondition(): ?string
+    {
+        $conditions = $this->visibilityConditions();
+
+        if ($conditions === []) {
+            return $this->condition;
+        }
+
+        return implode(' && ', array_map(self::conditionExpression(...), $conditions));
+    }
+
+    /**
+     * @return array<string, array<string, mixed>>
+     */
+    private function schemaVisibility(): array
+    {
+        if (is_null($this->visibleWhen)) {
+            return [];
+        }
+
+        if ($this->inheritedVisibility === []) {
+            return [
+                'when' => $this->visibleWhen,
+            ];
+        }
+
+        return [
+            'when' => [
+                ...$this->visibleWhen,
+                'also' => $this->inheritedVisibility,
+            ],
+        ];
     }
 
     public function jsonSerialize(): array

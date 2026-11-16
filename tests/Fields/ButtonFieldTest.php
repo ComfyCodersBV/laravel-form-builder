@@ -104,3 +104,11 @@ it('drops the html label again when a plain label replaces it', function () {
     expect($schema)->not->toHaveKey('labelHtml')
         ->and($schema['label'])->toBe('Text again');
 });
+
+it('refuses an event on a button that never emits', function (Closure $button) {
+    $button()->toSchema();
+})->with([
+    'submit' => [fn () => Submit::make()->emit('saved')],
+    'delete button' => [fn () => DeleteButton::make()->emit('removed')],
+    'button with a delete url' => [fn () => Button::make('remove')->deleteUrl('/items/1')->emit('removed')],
+])->throws(InvalidArgumentException::class);
