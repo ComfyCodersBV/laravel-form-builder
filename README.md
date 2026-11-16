@@ -45,6 +45,13 @@ in the renderer, in Vue through `fieldOverrides`:
 <Form :schema="form" :field-overrides="{ preview: { onClick: () => (previewOpen = true) } }" />
 ```
 
+## Reserved field names
+
+The renderer keeps every value on Inertia's `useForm()` object, next to its own properties and methods. Serializing a
+form throws an `InvalidArgumentException` for a field (or remove flag) named after one of them, such as `data`,
+`errors`, `reset`, `query` or `transform`, instead of letting the field show and send that property. The list is
+`FormConfig::RESERVED_FIELD_NAMES`. Dotted names and repeater sub-fields are not affected.
+
 ## Classes on a field
 
 `->wrapperClass()` replaces the classes of the wrapper around a field's label, control, help and error. `->class()` is

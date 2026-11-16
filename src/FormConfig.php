@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
+use InvalidArgumentException;
 use JsonSerializable;
 use TranquilTools\FormBuilder\Fields\BaseField;
 use TranquilTools\FormBuilder\Fields\Radio;
@@ -28,6 +29,56 @@ class FormConfig implements JsonSerializable
      * silently wrong output.
      */
     public const SCHEMA_VERSION = '1.15';
+
+    /**
+     * @var list<string>
+     */
+    public const RESERVED_FIELD_NAMES = [
+        '__remember',
+        '__rememberable',
+        '__restore',
+        '__touched',
+        '__valid',
+        'cancel',
+        'clearErrors',
+        'data',
+        'defaults',
+        'delete',
+        'dontRemember',
+        'errors',
+        'forgetError',
+        'get',
+        'hasErrors',
+        'invalid',
+        'isDirty',
+        'only',
+        'optimistic',
+        'patch',
+        'post',
+        'processing',
+        'progress',
+        'put',
+        'query',
+        'recentlySuccessful',
+        'reset',
+        'resetAndClearErrors',
+        'setError',
+        'setErrors',
+        'setValidationTimeout',
+        'submit',
+        'touch',
+        'touched',
+        'transform',
+        'valid',
+        'validate',
+        'validateFiles',
+        'validating',
+        'validator',
+        'wasSuccessful',
+        'withAllErrors',
+        'withPrecognition',
+        'withoutFileValidation',
+    ];
 
     protected ?AbstractForm $configurator = null;
 
@@ -238,6 +289,8 @@ class FormConfig implements JsonSerializable
 
     public function jsonSerialize(): array
     {
+        $this->guardAgainstReservedNames();
+
         $schemas = array_map(fn ($field) => $field->toSchema(), $this->getFields());
         $schemas = Radio::normalize($schemas);
 
@@ -273,6 +326,34 @@ class FormConfig implements JsonSerializable
             ...$payload,
             'columns' => $this->columns,
         ];
+    }
+
+    protected function guardAgainstReservedNames(): void
+    {
+        foreach ($this->valueFields($this->getFields()) as $field) {
+            $name = $field->getName();
+
+            if (in_array($name, self::RESERVED_FIELD_NAMES, true)) {
+                throw new InvalidArgumentException(sprintf(
+                    'The field "%s" uses a name the Inertia form (useForm) reserves for a property or method of its own. '
+                    .'The renderer keeps every value on that form, so the field would show and send that property '
+                    .'instead of its value. Rename the field, for example to "%s_value", and map it in your controller.',
+                    $name,
+                    $name,
+                ));
+            }
+
+            $flag = method_exists($field, 'getRemoveFlag') ? $field->getRemoveFlag() : null;
+
+            if (in_array($flag, self::RESERVED_FIELD_NAMES, true)) {
+                throw new InvalidArgumentException(sprintf(
+                    'The remove flag "%s" of field "%s" uses a name the Inertia form (useForm) reserves for a property '
+                    .'or method of its own. Pass another flag name to removable().',
+                    $flag,
+                    $name,
+                ));
+            }
+        }
     }
 
     /**

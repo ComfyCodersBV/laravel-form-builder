@@ -2,6 +2,14 @@
 
 All notable changes to `laravel-form-builder` will be documented in this file.
 
+## 1.17.0 - 2026-11-16
+* Serializing a form throws an `InvalidArgumentException` for a field named after a property or method of Inertia's
+  `useForm()`, such as `data`, `errors`, `reset`, `submit`, `get`, `post`, `delete`, `processing`, `transform`,
+  `query`, `only`, `validate`, `touch` or `setErrors`. The renderer keeps every value on that object, so such a field
+  showed and sent the property instead of its value. The same holds for a remove flag with such a name. The full list
+  is `FormConfig::RESERVED_FIELD_NAMES`. Dotted names (`data.street`) and sub-fields of a repeater are not affected.
+  Rename the field, for example `q` instead of `query`.
+
 ## 1.16.0 - 2026-11-13
 * Every field whose rules contain `required` sends `markRequired: true`, so a renderer can put an asterisk after its
   label. A `Rule::requiredIf()` counts only when its condition is a plain `true`; a closure, `required_if`,
