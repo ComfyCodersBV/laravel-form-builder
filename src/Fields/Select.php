@@ -10,6 +10,7 @@ use LogicException;
 use TranquilTools\FormBuilder\Fields\Traits\HasMultiple;
 use TranquilTools\FormBuilder\Fields\Traits\HasOptions;
 use TranquilTools\FormBuilder\Rules\DependentOption;
+use TranquilTools\FormBuilder\Rules\DisabledOption;
 
 class Select extends BaseField
 {
@@ -60,18 +61,100 @@ class Select extends BaseField
         return $this;
     }
 
+    /**
+     * @return array{separator: true, disabled: true}
+     */
+    public static function separator(): array
+    {
+        return [
+            'separator' => true,
+            'disabled' => true,
+        ];
+    }
+
     public function getRules(): array
+    {
+        return [
+            ...parent::getRules(),
+            ...$this->dependentOptionRules(),
+            ...$this->disabledOptionRules(),
+        ];
+    }
+
+    /**
+     * @return list<DependentOption>
+     */
+    protected function dependentOptionRules(): array
     {
         $name = $this->getName();
 
         if (is_null($this->dependsOn) || is_null($name) || $name === '') {
-            return parent::getRules();
+            return [];
         }
 
         return [
-            ...parent::getRules(),
             new DependentOption($name, $this->dependsOn, $this->allowedValuesPerOption()),
         ];
+    }
+
+    /**
+     * @return list<DisabledOption>
+     */
+    protected function disabledOptionRules(): array
+    {
+        $disabled = array_values(array_unique($this->disabledValues()));
+
+        if ($disabled === []) {
+            return [];
+        }
+
+        return [
+            new DisabledOption($disabled),
+        ];
+    }
+
+    /**
+     * @return list<string>
+     */
+    protected function disabledValues(): array
+    {
+        $lists = [
+            $this->attributes['options'] ?? [],
+            ...array_values($this->optionGroups ?? []),
+        ];
+
+        $disabled = [];
+
+        foreach ($lists as $options) {
+            $options = $options instanceof Collection ? $options->all() : $options;
+
+            if (! is_array($options)) {
+                continue;
+            }
+
+            foreach ($options as $key => $option) {
+                $value = $this->disabledValue($key, $option, array_is_list($options));
+
+                if (! is_null($value)) {
+                    $disabled[] = $value;
+                }
+            }
+        }
+
+        return $disabled;
+    }
+
+    protected function disabledValue(int|string $key, mixed $option, bool $fromList): ?string
+    {
+        $row = $option instanceof Arrayable ? $option->toArray() : $option;
+
+        if (! is_array($row) || ! ($row['disabled'] ?? false) || ($row['separator'] ?? false)) {
+            return null;
+        }
+
+        $value = $row[$this->valueKey()] ?? $row['value'] ?? ($fromList ? null : $key);
+
+        return is_scalar($value) ? (string) $value : null;
     }
 
     public function searchUrl(?string $url): static
@@ -257,7 +340,10 @@ class Select extends BaseField
         foreach ($this->optionsPerValue as $controllingValue => $options) {
             $allowed[(string) $controllingValue] = array_map(
                 fn (array $row): string => is_scalar($row[$this->valueKey()] ?? null) ? (string) $row[$this->valueKey()] : '',
-                $this->optionRows($options),
+                array_values(array_filter(
+                    $this->optionRows($options),
+                    fn (array $row): bool => ! ($row['disabled'] ?? false) && ! ($row['separator'] ?? false),
+                )),
             );
         }
 

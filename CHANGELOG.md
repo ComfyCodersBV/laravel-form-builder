@@ -2,6 +2,15 @@
 
 All notable changes to `laravel-form-builder` will be documented in this file.
 
+## 1.19.0 - 2026-11-16
+* A `Select` option given as an array with `'disabled' => true` is sent as disabled. Rows take `value` and `label`, as a
+  `Radio` does, or the field's `optionValue` and `optionLabel`; a map takes an array as its value. The field adds a
+  `DisabledOption` rule that refuses a disabled value, for a multiple select every value, from `->options()` and
+  `->optionGroups()`. With `->optionsFor()` the `DependentOption` rule refuses a value that is disabled in the list of
+  the submitted other value. A stored value that has become disabled therefore fails validation.
+* `Select::separator()` gives an option row (`['separator' => true, 'disabled' => true]`) that a renderer shows as a
+  divider line. It has no value.
+
 ## 1.18.0 - 2026-11-16
 * `Repeater::table()` sends `table: true`, so a renderer shows the rows as a table with the labels once in a header.
   laravel-vue-form-builder 1.23 renders it; an older renderer shows the rows as before.
