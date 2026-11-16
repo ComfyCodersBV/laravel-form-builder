@@ -5,6 +5,8 @@ All notable changes to `laravel-form-builder` will be documented in this file.
 ## 1.18.0 - 2026-11-16
 * `Repeater::table()` sends `table: true`, so a renderer shows the rows as a table with the labels once in a header.
   laravel-vue-form-builder 1.23 renders it; an older renderer shows the rows as before.
+* `->columnWidth('8rem')` on any field sends `columnWidth`, the width of its column in a repeater table. It takes a
+  number with `px`, `rem`, `em`, `ch` or `%` and throws an `InvalidArgumentException` for anything else.
 
 ## 1.17.0 - 2026-11-16
 * Serializing a form throws an `InvalidArgumentException` for a field named after a property or method of Inertia's
