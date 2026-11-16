@@ -2,6 +2,11 @@
 
 All notable changes to `laravel-form-builder` will be documented in this file.
 
+## 1.21.0 - 2026-11-16
+* `dates.display_format` in `config/form-builder.php` sets the `format` of every `Date` and `DateTime` field, also with
+  `range()`, that has no `->format()` of its own. `->format()` on a field wins. `null`, the default, sends no format as
+  before.
+
 ## 1.20.0 - 2026-11-16
 * `->if('action', 'rebook')` takes a field name and a value, or a list of values, next to the existing
   `->if('expression')`. The schema carries `when: {field, values}` and an equivalent `condition` expression for older

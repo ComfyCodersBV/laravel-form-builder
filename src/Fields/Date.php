@@ -230,6 +230,7 @@ class Date extends BaseField
         }
 
         $schema = array_merge(parent::toSchema(), array_filter([
+            'format' => $this->attributes['format'] ?? $this->defaultDisplayFormat(),
             'disabledWeekdays' => $this->disabledWeekdays,
             'disabledDates' => $this->disabledDates,
         ]));
@@ -259,6 +260,13 @@ class Date extends BaseField
         } catch (Throwable) {
             return $value;
         }
+    }
+
+    private function defaultDisplayFormat(): ?string
+    {
+        $format = config('form-builder.dates.display_format');
+
+        return is_string($format) && $format !== '' ? $format : null;
     }
 
     private function applicationTimezone(): string
