@@ -55,6 +55,11 @@ abstract class AbstractForm
         return self::make(...$arguments)->getAttributes();
     }
 
+    public static function errorBag(...$arguments): ?string
+    {
+        return self::make(...$arguments)->getErrorBag();
+    }
+
     public function validate(?Request $request = null, ...$params): array
     {
         $request = $request ?? request();

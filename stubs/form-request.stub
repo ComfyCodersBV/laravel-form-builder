@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace {{ namespace }};
 
 use {{ namespacedForm }};
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 
 class {{ class }} extends FormRequest
@@ -22,5 +23,12 @@ class {{ class }} extends FormRequest
     public function attributes(): array
     {
         return {{ form }}::attributes();
+    }
+
+    protected function failedValidation(Validator $validator): void
+    {
+        $this->errorBag = {{ form }}::errorBag() ?? $this->errorBag;
+
+        parent::failedValidation($validator);
     }
 }

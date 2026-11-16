@@ -103,7 +103,7 @@ class BookingRequest extends FormRequest
 
 `$form->errorBag('newsletter')` sends `errorBag` in the schema and makes `validate()` put its errors in that bag, so
 two forms with the same field names on one page keep their errors apart. Without a bag the errors stay in the default
-bag.
+bag. A `FormRequest` with `UsesForm`, and one made by `make:form-request`, uses the bag of its form too.
 
 ## Namespace
 

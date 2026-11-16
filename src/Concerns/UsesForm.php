@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace TranquilTools\FormBuilder\Concerns;
 
+use Illuminate\Contracts\Validation\Validator;
 use TranquilTools\FormBuilder\FormConfig;
 
 trait UsesForm
@@ -26,6 +27,13 @@ trait UsesForm
     public function attributes(): array
     {
         return $this->builtForm()->getAttributes();
+    }
+
+    protected function failedValidation(Validator $validator): void
+    {
+        $this->errorBag = $this->builtForm()->getErrorBag() ?? $this->errorBag;
+
+        parent::failedValidation($validator);
     }
 
     protected function builtForm(): FormConfig
