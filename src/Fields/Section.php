@@ -8,7 +8,9 @@ use Illuminate\Support\HtmlString;
 
 class Section extends BaseField
 {
-    public const MAX_COLUMNS = 4;
+    public const MAX_COLUMNS = 12;
+
+    public const MAX_COLUMNS_BEFORE_FULL_GRID = 6;
 
     protected string $type = 'section';
 
@@ -33,9 +35,18 @@ class Section extends BaseField
 
     public function columns(int $columns): static
     {
-        $this->attributes['columns'] = max(1, min(self::MAX_COLUMNS, $columns));
+        $this->attributes['columns'] = self::normalizeColumns($columns);
 
         return $this;
+    }
+
+    public static function normalizeColumns(int $columns): int
+    {
+        if ($columns >= self::MAX_COLUMNS) {
+            return self::MAX_COLUMNS;
+        }
+
+        return max(1, min(self::MAX_COLUMNS_BEFORE_FULL_GRID, $columns));
     }
 
     /**

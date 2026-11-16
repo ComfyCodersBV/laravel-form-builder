@@ -7,6 +7,11 @@ All notable changes to `laravel-form-builder` will be documented in this file.
   laravel-vue-form-builder 1.23 renders it; an older renderer shows the rows as before.
 * `->columnWidth('8rem')` on any field sends `columnWidth`, the width of its column in a repeater table. It takes a
   number with `px`, `rem`, `em`, `ch` or `%` and throws an `InvalidArgumentException` for anything else.
+* `FormConfig::columns()` and `Section::columns()` take `1` to `6` and `12`. `7` to `11` become `6` and more than `12`
+  becomes `12`; before, everything above `4` became `4`. `->columnSpan()` takes up to `12`. `Section::MAX_COLUMNS` is
+  now `12`, and `Section::normalizeColumns()` rounds a count to a supported one. laravel-vue-form-builder 1.23 renders
+  the new counts; an older renderer shows `4` columns for them.
+* `SCHEMA_VERSION` is now `1.16`.
 
 ## 1.17.0 - 2026-11-16
 * Serializing a form throws an `InvalidArgumentException` for a field named after a property or method of Inertia's
