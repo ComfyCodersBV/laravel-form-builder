@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace TranquilTools\FormBuilder\Fields;
 
+use Illuminate\Support\Str;
 use TranquilTools\FormBuilder\Fields\Traits\HasTextfieldOptions;
+use TranquilTools\FormBuilder\Rules\Charset;
 
 class Text extends BaseField
 {
@@ -40,6 +42,39 @@ class Text extends BaseField
         $this->type = in_array($type, $allowed, true) ? $type : 'text';
 
         return $this;
+    }
+
+    public function charset(string $charset): static
+    {
+        $this->rules = [
+            ...array_filter($this->rules, fn (mixed $existing): bool => ! $existing instanceof Charset),
+            new Charset($charset),
+        ];
+        $this->attributes['charset'] = $charset;
+
+        return $this;
+    }
+
+    public function uppercase(bool $uppercase = true): static
+    {
+        if (! $uppercase) {
+            unset($this->attributes['uppercase']);
+
+            return $this;
+        }
+
+        $this->attributes['uppercase'] = true;
+
+        return $this;
+    }
+
+    public function prepareForValidation(mixed $value): mixed
+    {
+        if (! ($this->attributes['uppercase'] ?? false) || ! is_string($value)) {
+            return $value;
+        }
+
+        return Str::upper($value);
     }
 
     public function email(): static

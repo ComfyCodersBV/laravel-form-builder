@@ -13,6 +13,11 @@ All notable changes to `laravel-form-builder` will be documented in this file.
 * `Checkboxes::columns(['lot' => 'Lot', ...])` sends `optionColumns: [{key, label}]`, so a renderer shows the options
   as rows of a table with those columns, read from the keys of each option row. `->selectAll()` sends
   `selectAll: true` for "Select all" and "Select none" buttons.
+* `Text::charset('0-9')` sends `charset` and adds a `Charset` rule that checks the value against `/^[0-9]*$/u` and fails
+  with the `validation.regex` message. An empty value passes. A class that is no valid regular expression throws an
+  `InvalidArgumentException`.
+* `Text::uppercase()` sends `uppercase: true`, and `FormConfig::validate()` upper-cases the value before it validates,
+  also inside a repeater.
 
 ## 1.18.0 - 2026-11-16
 * `Repeater::table()` sends `table: true`, so a renderer shows the rows as a table with the labels once in a header.
