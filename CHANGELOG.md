@@ -2,6 +2,17 @@
 
 All notable changes to `laravel-form-builder` will be documented in this file.
 
+## 1.22.0 - 2026-11-16
+* `FormConfig::errorBag('newsletter')` sends `errorBag`, so a renderer can scope the errors of the form to that bag.
+  `FormConfig::validate()` and `AbstractForm::validate()` put the validation errors in that bag, so two forms with the
+  same field names on one page keep their errors apart. An empty name or `null` sends no bag. Without a bag nothing
+  changes.
+* A `FormRequest` with `UsesForm` puts its validation errors in the error bag of its form, and so does a request made
+  by `make:form-request`, through the new static `AbstractForm::errorBag()`. Requests generated before keep the
+  default bag until they get the `failedValidation()` of the new stub. A form without a bag leaves the `$errorBag` of
+  the request as it is.
+* `SCHEMA_VERSION` is now `1.19`.
+
 ## 1.21.0 - 2026-11-16
 * `dates.display_format` in `config/form-builder.php` sets the `format` of every `Date` and `DateTime` field, also with
   `range()`, that has no `->format()` of its own. `->format()` on a field wins. `null`, the default, sends no format as

@@ -99,6 +99,12 @@ class BookingRequest extends FormRequest
 }
 ```
 
+## Error bags
+
+`$form->errorBag('newsletter')` sends `errorBag` in the schema and makes `validate()` put its errors in that bag, so
+two forms with the same field names on one page keep their errors apart. Without a bag the errors stay in the default
+bag. A `FormRequest` with `UsesForm`, and one made by `make:form-request`, uses the bag of its form too.
+
 ## Namespace
 
 The namespace is `TranquilTools\FormBuilder\` and did **not** change when this package was extracted from the Vue
