@@ -20,6 +20,7 @@ All notable changes to `laravel-form-builder` will be documented in this file.
 * `Button::emit('make-rows')` sends `emit`, so a renderer can report the click as a named event. An empty name throws
   an `InvalidArgumentException`, and so do `Submit::emit()`, `DeleteButton::emit()` and serializing a `Button` with
   both `->emit()` and `->deleteUrl()`.
+* `SCHEMA_VERSION` is now `1.18`.
 
 ## 1.19.0 - 2026-11-16
 * A `Select` option given as an array with `'disabled' => true` is sent as disabled. Rows take `value` and `label`, as a

@@ -28,7 +28,7 @@ class FormConfig implements JsonSerializable
      * Renderers compare their supported version against this and refuse to render
      * silently wrong output.
      */
-    public const SCHEMA_VERSION = '1.17';
+    public const SCHEMA_VERSION = '1.18';
 
     /**
      * @var list<string>
