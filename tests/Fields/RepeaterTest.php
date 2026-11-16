@@ -27,6 +27,18 @@ it('serializes its sub-fields into the schema', function () {
         ->and($schema['fields'][1]['name'])->toBe('name');
 });
 
+it('sends the table view', function () {
+    $schema = Repeater::make('barrels')
+        ->table()
+        ->fields([
+            Text::make('number'),
+        ])
+        ->toSchema();
+
+    expect($schema['table'])->toBeTrue()
+        ->and(Repeater::make('barrels')->toSchema())->not->toHaveKey('table');
+});
+
 it('expands sub-field rules into dotted wildcard rules', function () {
     $nested = Repeater::make('ingredients')
         ->fields([

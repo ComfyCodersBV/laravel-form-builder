@@ -2,6 +2,10 @@
 
 All notable changes to `laravel-form-builder` will be documented in this file.
 
+## 1.18.0 - 2026-11-16
+* `Repeater::table()` sends `table: true`, so a renderer shows the rows as a table with the labels once in a header.
+  laravel-vue-form-builder 1.23 renders it; an older renderer shows the rows as before.
+
 ## 1.17.0 - 2026-11-16
 * Serializing a form throws an `InvalidArgumentException` for a field named after a property or method of Inertia's
   `useForm()`, such as `data`, `errors`, `reset`, `submit`, `get`, `post`, `delete`, `processing`, `transform`,
