@@ -28,7 +28,7 @@ class FormConfig implements JsonSerializable
      * Renderers compare their supported version against this and refuse to render
      * silently wrong output.
      */
-    public const SCHEMA_VERSION = '1.15';
+    public const SCHEMA_VERSION = '1.16';
 
     /**
      * @var list<string>
@@ -209,7 +209,7 @@ class FormConfig implements JsonSerializable
 
     public function columns(?int $columns): static
     {
-        $this->columns = is_null($columns) ? null : max(1, min(Section::MAX_COLUMNS, $columns));
+        $this->columns = is_null($columns) ? null : Section::normalizeColumns($columns);
 
         return $this;
     }

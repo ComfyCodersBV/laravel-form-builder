@@ -92,6 +92,21 @@ abstract class BaseField implements JsonSerializable
         return $this;
     }
 
+    public function columnWidth(string $width): static
+    {
+        if (preg_match('/^\d+(\.\d+)?(px|rem|em|ch|%)$/D', $width) !== 1) {
+            throw new InvalidArgumentException(sprintf(
+                'The column width "%s" on field "%s" is not a CSS length. Use a number with px, rem, em, ch or %%, for example "8rem".',
+                $width,
+                $this->getName() ?? 'field_name',
+            ));
+        }
+
+        $this->attributes['columnWidth'] = $width;
+
+        return $this;
+    }
+
     public function columnSpanFull(): static
     {
         $this->attributes['columnSpan'] = 'full';

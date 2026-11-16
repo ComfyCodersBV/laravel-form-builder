@@ -89,6 +89,19 @@ it('lays out its fields in columns and lets a field span them', function () {
         ->and($schema['fields'][2]['columnSpan'])->toBe('full')
         ->and($schema['fields'][3]['columns'])->toBe(1)
         ->and(Section::make()->toSchema())->not->toHaveKey('columns')
-        ->and(Section::make()->columns(9)->toSchema()['columns'])->toBe(4)
-        ->and(Text::make('a')->columnSpan(0)->toSchema()['columnSpan'])->toBe(1);
+        ->and(Text::make('a')->columnSpan(0)->toSchema()['columnSpan'])->toBe(1)
+        ->and(Text::make('a')->columnSpan(13)->toSchema()['columnSpan'])->toBe(12);
 });
+
+it('keeps the supported column counts and rounds the others down to one it supports', function (int $requested, int $columns) {
+    expect(Section::make()->columns($requested)->toSchema()['columns'])->toBe($columns)
+        ->and(FormConfig::make()->columns($requested)->getColumns())->toBe($columns);
+})->with([
+    [0, 1],
+    [5, 5],
+    [6, 6],
+    [9, 6],
+    [11, 6],
+    [12, 12],
+    [20, 12],
+]);

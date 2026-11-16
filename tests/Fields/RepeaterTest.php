@@ -27,6 +27,30 @@ it('serializes its sub-fields into the schema', function () {
         ->and($schema['fields'][1]['name'])->toBe('name');
 });
 
+it('sends the table view and the column widths of its sub-fields', function () {
+    $schema = Repeater::make('barrels')
+        ->table()
+        ->fields([
+            Text::make('number')->columnWidth('8rem'),
+            Text::make('remark'),
+        ])
+        ->toSchema();
+
+    expect($schema['table'])->toBeTrue()
+        ->and($schema['fields'][0]['columnWidth'])->toBe('8rem')
+        ->and($schema['fields'][1])->not->toHaveKey('columnWidth')
+        ->and(Repeater::make('barrels')->toSchema())->not->toHaveKey('table');
+});
+
+it('refuses a column width that is not a CSS length', function (string $width) {
+    Text::make('number')->columnWidth($width);
+})->with([
+    '8',
+    'wide',
+    '8rem; color: red',
+    "8rem\n",
+])->throws(InvalidArgumentException::class);
+
 it('expands sub-field rules into dotted wildcard rules', function () {
     $nested = Repeater::make('ingredients')
         ->fields([

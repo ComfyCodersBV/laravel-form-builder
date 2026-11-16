@@ -157,8 +157,6 @@ it('converts date values to the application timezone while validating', function
 it('sends the form columns only when they are set', function () {
     expect(FormConfig::make()->jsonSerialize())->not->toHaveKey('columns')
         ->and(FormConfig::make()->columns(3)->jsonSerialize()['columns'])->toBe(3)
-        ->and(FormConfig::make()->columns(9)->getColumns())->toBe(4)
-        ->and(FormConfig::make()->columns(0)->getColumns())->toBe(1)
         ->and(FormConfig::make()->columns(2)->columns(null)->jsonSerialize())->not->toHaveKey('columns');
 });
 

@@ -49,6 +49,13 @@ class Repeater extends BaseField
         return $this;
     }
 
+    public function table(bool $table = true): static
+    {
+        $this->attributes['table'] = $table;
+
+        return $this;
+    }
+
     public function min(int $min): static
     {
         $this->attributes['min'] = $min;
