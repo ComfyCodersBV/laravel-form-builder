@@ -82,6 +82,16 @@ the renderer shows the date the way the browser does.
 its older name and keeps working. `->inputClass()` adds classes to the control itself (input, select trigger,
 checkbox, button). In the schema they are `className` and `inputClassName`.
 
+## Conditional setters
+
+Every field has `->when()` and `->unless()` (Laravel's `Conditionable`), so a setter can depend on a condition without
+breaking the chain. Setters such as `->help()` do not take `null`:
+
+```php
+Password::make('password')
+    ->when($hasPassword, fn (Password $field) => $field->help('The stored password is kept.'));
+```
+
 ## Form requests
 
 `TranquilTools\FormBuilder\Concerns\UsesForm` builds the form once and answers both `rules()` and `attributes()` of a

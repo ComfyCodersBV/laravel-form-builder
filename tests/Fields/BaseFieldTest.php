@@ -119,3 +119,14 @@ it('names the refused attribute and shows the Vue way', function () {
                 ->toContain('onClick');
         });
 });
+
+it('applies a setter only when the condition holds', function (bool $hasPassword, bool $expectsHelp) {
+    $schema = Text::make('password')
+        ->when($hasPassword, fn (Text $field): Text => $field->help('The stored password is kept.'))
+        ->toSchema();
+
+    expect(array_key_exists('help', $schema))->toBe($expectsHelp);
+})->with([
+    'condition holds' => [true, true],
+    'condition fails' => [false, false],
+]);

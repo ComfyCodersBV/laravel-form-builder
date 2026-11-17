@@ -2,6 +2,10 @@
 
 All notable changes to `laravel-form-builder` will be documented in this file.
 
+## 1.23.0 - 2026-11-17
+* Fields get `->when()` and `->unless()` from Laravel's `Conditionable`, so a setter can depend on a condition without
+  breaking the chain: `->when($hasPassword, fn (Password $field) => $field->help('The stored password is kept.'))`.
+
 ## 1.22.0 - 2026-11-16
 * `FormConfig::errorBag('newsletter')` sends `errorBag`, so a renderer can scope the errors of the form to that bag.
   `FormConfig::validate()` and `AbstractForm::validate()` put the validation errors in that bag, so two forms with the

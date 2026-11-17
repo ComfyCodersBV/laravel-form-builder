@@ -6,6 +6,7 @@ namespace TranquilTools\FormBuilder\Fields;
 
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
+use Illuminate\Support\Traits\Conditionable;
 use Illuminate\Support\Traits\Macroable;
 use Illuminate\Validation\Rules\RequiredIf;
 use InvalidArgumentException;
@@ -19,6 +20,7 @@ use JsonSerializable;
  */
 abstract class BaseField implements JsonSerializable
 {
+    use Conditionable;
     use Macroable;
 
     protected string $type;
