@@ -50,6 +50,7 @@ return [
         'validate_bounds' => false,
         'week_starts_on' => null,
         'week_numbers' => false,
+        'marked_dates_route' => null,
     ],
 
     'validation' => [
