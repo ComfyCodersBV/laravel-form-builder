@@ -6,6 +6,7 @@ namespace TranquilTools\FormBuilder\Fields;
 
 use DateTimeInterface;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Route;
 use InvalidArgumentException;
 use Throwable;
 use TranquilTools\FormBuilder\Rules\AvailableDate;
@@ -28,6 +29,8 @@ class Date extends BaseField
     protected ?bool $validateBounds = null;
 
     protected ?bool $weekNumbers = null;
+
+    protected bool $markedDatesUrlSet = false;
 
     /** @var list<array{from: string, to?: string, variant?: string, label?: string}> */
     protected array $markedDates = [];
@@ -139,6 +142,8 @@ class Date extends BaseField
 
     public function markedDatesUrl(?string $url): static
     {
+        $this->markedDatesUrlSet = true;
+
         if (is_null($url) || $url === '') {
             unset($this->attributes['markedDatesUrl']);
 
@@ -276,6 +281,12 @@ class Date extends BaseField
             'weekNumbers' => $this->weekNumbers ?? (bool) config('form-builder.dates.week_numbers', false),
         ]));
 
+        $markedDatesUrl = $this->defaultMarkedDatesUrl();
+
+        if (! is_null($markedDatesUrl)) {
+            $schema['markedDatesUrl'] = $markedDatesUrl;
+        }
+
         $weekStart = $this->attributes['weekStartsOn'] ?? $this->defaultWeekStart();
 
         if (! is_null($weekStart)) {
@@ -355,6 +366,25 @@ class Date extends BaseField
         }
 
         throw new InvalidArgumentException('A marked date must be a Y-m-d string or a date object.');
+    }
+
+    private function defaultMarkedDatesUrl(): ?string
+    {
+        if ($this->markedDatesUrlSet) {
+            return null;
+        }
+
+        $routeName = config('form-builder.dates.marked_dates_route');
+
+        if (! is_string($routeName) || $routeName === '') {
+            return null;
+        }
+
+        if (! Route::has($routeName)) {
+            throw new InvalidArgumentException(sprintf('The marked dates route [%s] does not exist.', $routeName));
+        }
+
+        return route($routeName);
     }
 
     private function defaultWeekStart(): ?int

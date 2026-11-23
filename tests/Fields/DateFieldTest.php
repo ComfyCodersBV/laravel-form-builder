@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
+use InvalidArgumentException;
 use TranquilTools\FormBuilder\Fields\Date;
 use TranquilTools\FormBuilder\Fields\DateTime;
 use TranquilTools\FormBuilder\FormConfig;
@@ -356,3 +358,27 @@ it('sends no format without a configured display format', function () {
 
     expect(Date::make('at')->toSchema())->not->toHaveKey('format');
 });
+
+it('takes the marked dates url from the configured route', function () {
+    Route::get('calendar/marked', fn () => [])->name('calendar.marked');
+    Route::getRoutes()->refreshNameLookups();
+    config()->set('form-builder.dates.marked_dates_route', 'calendar.marked');
+
+    expect(Date::make('at')->toSchema()['markedDatesUrl'])->toBe(url('calendar/marked'))
+        ->and(DateTime::make('at')->toSchema()['markedDatesUrl'])->toBe(url('calendar/marked'));
+});
+
+it('lets the field override or turn off the configured marked dates route', function () {
+    Route::get('calendar/marked', fn () => [])->name('calendar.marked');
+    Route::getRoutes()->refreshNameLookups();
+    config()->set('form-builder.dates.marked_dates_route', 'calendar.marked');
+
+    expect(Date::make('at')->markedDatesUrl('/other')->toSchema()['markedDatesUrl'])->toBe('/other')
+        ->and(Date::make('at')->markedDatesUrl(null)->toSchema())->not->toHaveKey('markedDatesUrl');
+});
+
+it('throws on a configured marked dates route that does not exist', function () {
+    config()->set('form-builder.dates.marked_dates_route', 'missing.route');
+
+    Date::make('at')->toSchema();
+})->throws(InvalidArgumentException::class);
