@@ -74,6 +74,37 @@ it('clamps a configured week start to sunday or monday', function () {
     expect(Date::make('at')->toSchema()['weekStartsOn'])->toBe(0);
 });
 
+it('sends the url to fetch marked dates from', function () {
+    expect(Date::make('at')->markedDatesUrl('/leave/marked')->toSchema()['markedDatesUrl'])->toBe('/leave/marked')
+        ->and(Date::make('at')->markedDatesUrl('/leave/marked')->markedDatesUrl(null)->toSchema())->not->toHaveKey('markedDatesUrl')
+        ->and(Date::make('at')->toSchema())->not->toHaveKey('markedDates');
+});
+
+it('normalizes marked dates to calendar dates', function () {
+    $schema = Date::make('at')
+        ->markedDates([
+            '2026-12-25 10:00',
+            CarbonImmutable::parse('2026-12-31'),
+            ['from' => '2026-07-20', 'to' => CarbonImmutable::parse('2026-08-02'), 'variant' => 'muted', 'label' => 'Requested'],
+        ])
+        ->markedDates([['from' => '2027-01-04', 'to' => null, 'label' => '']])
+        ->toSchema();
+
+    expect($schema['markedDates'])->toBe([
+        ['from' => '2026-12-25'],
+        ['from' => '2026-12-31'],
+        ['from' => '2026-07-20', 'to' => '2026-08-02', 'variant' => 'muted', 'label' => 'Requested'],
+        ['from' => '2027-01-04'],
+    ]);
+});
+
+it('refuses a marked date that is not a date', function (mixed $date) {
+    Date::make('at')->markedDates([$date]);
+})->throws(InvalidArgumentException::class)->with([
+    'text' => ['soon'],
+    'range without from' => [['to' => '2026-08-02']],
+]);
+
 it('stores format and locale', function () {
     $schema = Date::make('at')->format('d-m-Y')->locale('nl')->toSchema();
 

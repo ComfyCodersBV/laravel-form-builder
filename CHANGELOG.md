@@ -7,6 +7,10 @@ All notable changes to `laravel-form-builder` will be documented in this file.
   calendar row. `dates.week_numbers` in `config/form-builder.php` turns them on for every `Date` and `DateTime` field,
   and `dates.week_starts_on` (`0` or `1`) sets `weekStartsOn` for every field without its own `->weekStartsOn()`. The
   field wins over the config. The defaults, `false` and `null`, send nothing new.
+* `Date::make()->markedDatesUrl('/calendar/marked')` sends `markedDatesUrl`, a URL a renderer fetches marked days from:
+  a JSON list of `{from: 'Y-m-d', to: 'Y-m-d'|null, variant?, label?}`. `->markedDates([...])` sends a fixed list in the
+  same shape as `markedDates`, from `Y-m-d` strings, date objects or `['from' => ..., 'to' => ..., 'variant' => ...,
+  'label' => ...]` arrays. Marked days stay selectable.
 
 ## 1.23.0 - 2026-11-17
 * Fields get `->when()` and `->unless()` from Laravel's `Conditionable`, so a setter can depend on a condition without

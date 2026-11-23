@@ -6,6 +6,7 @@ namespace TranquilTools\FormBuilder\Fields;
 
 use DateTimeInterface;
 use Illuminate\Support\Carbon;
+use InvalidArgumentException;
 use Throwable;
 use TranquilTools\FormBuilder\Rules\AvailableDate;
 use TranquilTools\FormBuilder\Rules\DateBounds;
@@ -27,6 +28,9 @@ class Date extends BaseField
     protected ?bool $validateBounds = null;
 
     protected ?bool $weekNumbers = null;
+
+    /** @var list<array{from: string, to?: string, variant?: string, label?: string}> */
+    protected array $markedDates = [];
 
     public function range(bool $range = true): static
     {
@@ -116,6 +120,32 @@ class Date extends BaseField
             ...$this->disabledDates,
             ...AvailableDate::normalizeDates($dates),
         ];
+
+        return $this;
+    }
+
+    /**
+     * @param  array<int, string|DateTimeInterface|array{from: string|DateTimeInterface, to?: string|DateTimeInterface|null, variant?: string|null, label?: string|null}>  $dates
+     */
+    public function markedDates(array $dates): static
+    {
+        $this->markedDates = [
+            ...$this->markedDates,
+            ...array_map($this->normalizeMarkedDate(...), array_values($dates)),
+        ];
+
+        return $this;
+    }
+
+    public function markedDatesUrl(?string $url): static
+    {
+        if (is_null($url) || $url === '') {
+            unset($this->attributes['markedDatesUrl']);
+
+            return $this;
+        }
+
+        $this->attributes['markedDatesUrl'] = $url;
 
         return $this;
     }
@@ -242,6 +272,7 @@ class Date extends BaseField
             'format' => $this->attributes['format'] ?? $this->defaultDisplayFormat(),
             'disabledWeekdays' => $this->disabledWeekdays,
             'disabledDates' => $this->disabledDates,
+            'markedDates' => $this->markedDates,
             'weekNumbers' => $this->weekNumbers ?? (bool) config('form-builder.dates.week_numbers', false),
         ]));
 
@@ -283,6 +314,47 @@ class Date extends BaseField
         $format = config('form-builder.dates.display_format');
 
         return is_string($format) && $format !== '' ? $format : null;
+    }
+
+    /**
+     * @return array{from: string, to?: string, variant?: string, label?: string}
+     */
+    private function normalizeMarkedDate(mixed $date): array
+    {
+        if (! is_array($date)) {
+            return ['from' => $this->markedDateString($date)];
+        }
+
+        if (! isset($date['from'])) {
+            throw new InvalidArgumentException('A marked date range needs a [from] date.');
+        }
+
+        $marked = ['from' => $this->markedDateString($date['from'])];
+
+        if (isset($date['to'])) {
+            $marked['to'] = $this->markedDateString($date['to']);
+        }
+
+        foreach (['variant', 'label'] as $key) {
+            if (is_string($date[$key] ?? null) && $date[$key] !== '') {
+                $marked[$key] = $date[$key];
+            }
+        }
+
+        return $marked;
+    }
+
+    private function markedDateString(mixed $date): string
+    {
+        if ($date instanceof DateTimeInterface) {
+            return $date->format('Y-m-d');
+        }
+
+        if (is_string($date) && preg_match('/^\d{4}-\d{2}-\d{2}/', $date, $matches) === 1) {
+            return $matches[0];
+        }
+
+        throw new InvalidArgumentException('A marked date must be a Y-m-d string or a date object.');
     }
 
     private function defaultWeekStart(): ?int

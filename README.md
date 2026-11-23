@@ -83,6 +83,14 @@ row. `'dates' => ['week_starts_on' => 1, 'week_numbers' => true]` in `config/for
 and week numbers for every `Date` and `DateTime` field. `->weekStartsOn()` and `->weekNumbers(false)` on a field win.
 `week_starts_on` `null` (the default) sends no `weekStartsOn`, so the renderer starts on Sunday as before.
 
+## Marked dates
+
+`->markedDatesUrl('/calendar/marked')` sends `markedDatesUrl`. The renderer fetches the marked days from that URL when
+the picker opens for the first time and expects a JSON list of `{from: 'Y-m-d', to: 'Y-m-d'|null, variant?, label?}`.
+`->markedDates([...])` sends a fixed list in the same shape as `markedDates`: a `Y-m-d` string or date object marks one
+day, an array takes `from`, an optional `to`, `variant` and `label`. Calling it again adds to the list. Marked days stay
+selectable; to block a day use `->disabledDates()`.
+
 ## Classes on a field
 
 `->wrapperClass()` replaces the classes of the wrapper around a field's label, control, help and error. `->class()` is
