@@ -5,7 +5,8 @@ All notable changes to `laravel-form-builder` will be documented in this file.
 ## 1.25.0 - 2026-11-23
 * `dates.marked_dates_route` in `config/form-builder.php` sends that route's URL as `markedDatesUrl` for every `Date`
   and `DateTime` field. A field's own `->markedDatesUrl()` wins, and `->markedDatesUrl(null)` turns it off for that
-  field. A route name that does not exist throws an `InvalidArgumentException`. The default, `null`, sends nothing new.
+  field. The URL is relative to the host and resolved when the schema is built. A route name that does not exist, or a
+  route that needs parameters, throws an `InvalidArgumentException`. The default, `null`, sends nothing new.
 
 ## 1.24.0 - 2026-11-23
 * `Date::make()->weekNumbers()` sends `weekNumbers: true`, so a renderer shows the ISO 8601 week number in front of every

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace TranquilTools\FormBuilder\Fields;
 
 use DateTimeInterface;
+use Illuminate\Routing\Exceptions\UrlGenerationException;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Route;
 use InvalidArgumentException;
 use Throwable;
 use TranquilTools\FormBuilder\Rules\AvailableDate;
@@ -380,11 +380,11 @@ class Date extends BaseField
             return null;
         }
 
-        if (! Route::has($routeName)) {
-            throw new InvalidArgumentException(sprintf('The marked dates route [%s] does not exist.', $routeName));
+        try {
+            return route($routeName, [], false);
+        } catch (UrlGenerationException $e) {
+            throw new InvalidArgumentException(sprintf('The marked dates route [%s] must not need parameters.', $routeName), previous: $e);
         }
-
-        return route($routeName);
     }
 
     private function defaultWeekStart(): ?int

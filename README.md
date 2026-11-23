@@ -89,8 +89,9 @@ and week numbers for every `Date` and `DateTime` field. `->weekStartsOn()` and `
 the picker opens for the first time and expects a JSON list of `{from: 'Y-m-d', to: 'Y-m-d'|null, variant?, label?}`.
 `'dates' => ['marked_dates_route' => 'calendar.marked']` in `config/form-builder.php` sends that route's URL as
 `markedDatesUrl` for every `Date` and `DateTime` field. A route name, because a config file cannot call `route()`. A
-field's own `->markedDatesUrl()` wins, and `->markedDatesUrl(null)` turns it off for that field. A route name that does
-not exist throws an `InvalidArgumentException`.
+field's own `->markedDatesUrl()` wins, and `->markedDatesUrl(null)` turns it off for that field. The URL is relative to
+the host, and the route is resolved when the schema is built, so build forms after the routes are loaded. A route name
+that does not exist, or a route that needs parameters, throws an `InvalidArgumentException` from `toSchema()`.
 `->markedDates([...])` sends a fixed list in the same shape as `markedDates`: a `Y-m-d` string or date object marks one
 day, an array takes `from`, an optional `to`, `variant` and `label`. Calling it again adds to the list. Marked days stay
 selectable; to block a day use `->disabledDates()`.
