@@ -26,6 +26,8 @@ class Date extends BaseField
 
     protected ?bool $validateBounds = null;
 
+    protected ?bool $weekNumbers = null;
+
     public function range(bool $range = true): static
     {
         if ($range) {
@@ -174,6 +176,13 @@ class Date extends BaseField
         return $this;
     }
 
+    public function weekNumbers(bool $show = true): static
+    {
+        $this->weekNumbers = $show;
+
+        return $this;
+    }
+
     public function format(string $format): static
     {
         $this->attributes['format'] = $format;
@@ -233,7 +242,14 @@ class Date extends BaseField
             'format' => $this->attributes['format'] ?? $this->defaultDisplayFormat(),
             'disabledWeekdays' => $this->disabledWeekdays,
             'disabledDates' => $this->disabledDates,
+            'weekNumbers' => $this->weekNumbers ?? (bool) config('form-builder.dates.week_numbers', false),
         ]));
+
+        $weekStart = $this->attributes['weekStartsOn'] ?? $this->defaultWeekStart();
+
+        if (! is_null($weekStart)) {
+            $schema['weekStartsOn'] = $weekStart;
+        }
 
         $timezone = $this->getTimezone();
 
@@ -267,6 +283,17 @@ class Date extends BaseField
         $format = config('form-builder.dates.display_format');
 
         return is_string($format) && $format !== '' ? $format : null;
+    }
+
+    private function defaultWeekStart(): ?int
+    {
+        $weekStart = config('form-builder.dates.week_starts_on');
+
+        if (is_null($weekStart)) {
+            return null;
+        }
+
+        return (int) $weekStart === 1 ? 1 : 0;
     }
 
     private function applicationTimezone(): string

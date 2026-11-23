@@ -2,6 +2,12 @@
 
 All notable changes to `laravel-form-builder` will be documented in this file.
 
+## 1.24.0 - 2026-11-23
+* `Date::make()->weekNumbers()` sends `weekNumbers: true`, so a renderer shows the ISO 8601 week number in front of every
+  calendar row. `dates.week_numbers` in `config/form-builder.php` turns them on for every `Date` and `DateTime` field,
+  and `dates.week_starts_on` (`0` or `1`) sets `weekStartsOn` for every field without its own `->weekStartsOn()`. The
+  field wins over the config. The defaults, `false` and `null`, send nothing new.
+
 ## 1.23.0 - 2026-11-17
 * Fields get `->when()` and `->unless()` from Laravel's `Conditionable`, so a setter can depend on a condition without
   breaking the chain: `->when($hasPassword, fn (Password $field) => $field->help('The stored password is kept.'))`.
