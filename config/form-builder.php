@@ -48,6 +48,8 @@ return [
         'display_format' => null,
         'timezone' => null,
         'validate_bounds' => false,
+        'week_starts_on' => null,
+        'week_numbers' => false,
     ],
 
     'validation' => [

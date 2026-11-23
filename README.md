@@ -23,7 +23,7 @@ version stream, no duplication.
 |                           |                                                                                            |
 |---------------------------|--------------------------------------------------------------------------------------------|
 | `src/`                    | `AbstractForm`, `FormConfig`, every field type (also `Step` for multi-step forms), validation rules, the `make:form` commands |
-| `config/form-builder.php` | theme, required indicator, date display format and timezone, WYSIWYG defaults, reCAPTCHA and key-value settings |
+| `config/form-builder.php` | theme, required indicator, date display format, timezone, week start and week numbers, WYSIWYG defaults, reCAPTCHA and key-value settings |
 | `resources/lang/`         | translations used by PHP-side field labels                                                 |
 | `stubs/`                  | templates for the generator commands                                                       |
 
@@ -75,6 +75,21 @@ too. A renderer leaves it out of the payload.
 `'dates' => ['display_format' => 'DD-MM-YYYY']` in `config/form-builder.php` sends that `format` for every `Date` and
 `DateTime` field without its own `->format()`. `->format()` on a field wins. `null` (the default) sends no format, so
 the renderer shows the date the way the browser does.
+
+## Week start and week numbers
+
+`->weekNumbers()` sends `weekNumbers: true`, so the renderer shows the ISO 8601 week number in front of every calendar
+row. `'dates' => ['week_starts_on' => 1, 'week_numbers' => true]` in `config/form-builder.php` turns on a Monday start
+and week numbers for every `Date` and `DateTime` field. `->weekStartsOn()` and `->weekNumbers(false)` on a field win.
+`week_starts_on` `null` (the default) sends no `weekStartsOn`, so the renderer starts on Sunday as before.
+
+## Marked dates
+
+`->markedDatesUrl('/calendar/marked')` sends `markedDatesUrl`. The renderer fetches the marked days from that URL when
+the picker opens for the first time and expects a JSON list of `{from: 'Y-m-d', to: 'Y-m-d'|null, variant?, label?}`.
+`->markedDates([...])` sends a fixed list in the same shape as `markedDates`: a `Y-m-d` string or date object marks one
+day, an array takes `from`, an optional `to`, `variant` and `label`. Calling it again adds to the list. Marked days stay
+selectable; to block a day use `->disabledDates()`.
 
 ## Classes on a field
 
